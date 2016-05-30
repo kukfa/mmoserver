@@ -46,7 +46,12 @@ def sendPacket(conn, data):
 	if (len(data) % 8 == 0):
 		data += chksum
 	else:
-		data = data[0:len(data)-(len(data)%8)] + chksum	# instead of appending the checksum and padding with 0's to reach a multiple of 8 (for encryption), the checksum overwrites some of least significant bytes in order to reach a multiple of 8
+		'''
+		instead of appending the checksum and padding with 0's to reach
+		a multiple of 8 (for encryption), the checksum overwrites some
+		of least significant bytes in order to reach a multiple of 8
+		'''
+		data = data[0:len(data)-(len(data)%8)] + chksum
 	ct = b''.join(bf.encrypt_ecb(data))	# encrypt the data
 	size = len(ct) + 2
 	packet = struct.pack("<H", size)	# added to front of packet, little-endian order
@@ -61,6 +66,39 @@ def initPacket(conn):
 	packet = bytes([size & 0xff]) + bytes([size >> 8 & 0xff]) + data
 	conn.send(packet)
 
+def loginFail(conn, reason):
+	'''
+	reasons:
+	0x01 -> system error *
+	0x02 -> invalid username (message says "invalid username or password")
+	0x03 -> invalid username or password
+	0x04 -> access denied *
+	0x05 -> info on account is incorrect *
+	0x07 -> account already logged in
+	0x09 -> banned account *
+	0x10 -> ? *
+	0x12 -> account expired *
+	0x13 -> account out of game time *
+	(* = cancels login with "error connecting to server" message)
+	'''
+	data = b'\x01'	# packet ID
+	data += reason
+	data += b'\x00\x00\x00\x00\x00\x00'
+	sendPacket(conn, data)
+
+def accountKicked(conn, reason):
+	'''
+	reasons:
+	0x01 -> access denied (prints message about beta access timeframes)
+	0x08 -> blocked
+	0x10 -> blocked
+	0x20 -> blocked
+	'''
+	data = b'\x02'	# packet ID
+	data += reason
+	data += b'\x00\x00\x00\x00\x00\x00'
+	sendPacket(conn, data)
+
 def loginOk(conn, sessionKey):
 	data = b'\x03'		# packet ID
 	data += bytes(sessionKey)	# 8-byte session key
@@ -70,24 +108,6 @@ def loginOk(conn, sessionKey):
 	data += b'\x00\x00\x00\x00'
 	data += b'\x00\x00\x00\x00'
 	data += b'\x02\x00\x00\x00'
-	sendPacket(conn, data)
-
-def loginFail(conn, reason):
-	# TODO test
-	data = b'\x01'	# packet ID
-	data += b'\x00\x00\x00'	# filler?
-	# reasons:
-	# 0x01 -> system error
-	# 0x02 -> invalid password
-	# 0x03 -> invalid username or password
-	# 0x04 -> access denied
-	# 0x05 -> info on account is incorrect (?) might mean internal error in database?
-	# 0x07 -> account already in use
-	# 0x09 -> banned account
-	# 0x10 -> ?
-	# 0x12 -> account expired?
-	# 0x13 -> account out of game time
-	data += reason
 	sendPacket(conn, data)
 
 def serverList(conn):
@@ -109,23 +129,26 @@ def serverList(conn):
 		data += b'\x00\x00\x00\x00\x00'	# TODO doesn't list server if it isn't a test server
 	sendPacket(conn, data)
 
+def playFail(conn, reason):
+	'''
+	reasons:
+	0x01 -> account in use *
+	0x02 -> *
+	0x03 -> invalid password *
+	0x04 -> general failure? *
+	0x0f -> too many players *
+	(* = cancels with "error connecting to server" message)
+	'''
+	# TODO test
+	data = b'\x06'	# packet ID
+	data += reason
+	data += b'\x00\x00\x00\x00\x00\x00'
+	sendPacket(conn, data)
+
 def playOk(conn, sessionKey):
 	data = b'\x07'	# packet ID
 	data += sessionKey	# 8-byte session key
 	data += b'\x01\x00\x00\x00\x00\x00\x00'
-	sendPacket(conn, data)
-
-def playFail(conn, reason):
-	# TODO test
-	data = b'\x06'	# packet ID
-	data += b'\x00\x00\x00'	# probably filler?
-	# reasons:
-	# 0x01 -> account in use
-	# 0x02 -> ?
-	# 0x03 -> invalid password
-	# 0x04 -> general failure?
-	# 0x0f -> too many players
-	data += reason
 	sendPacket(conn, data)
 
 def requestAuthLogin(pt):
@@ -133,21 +156,27 @@ def requestAuthLogin(pt):
 	password = pt[16:30].decode('cp1252')
 	# TODO: fix decoding
 	print("RequestAuthLogin: " + username + ":" + password)
-	# TODO: additional checks: validate login, check if account is in game server or login server already
-	if (True):
-		sessionKey = os.urandom(8)
-		# associate key with account
-		# store that this account is currently logged in to login server
-		return sessionKey
-	return "01"
+	# if login invalid
+		#return "03"
+	# if account in (game or?) login server already
+		#return "07"
+	# if everything's valid
+	sessionKey = os.urandom(8)
+	# TODO associate key with account
+	# TODO store that this account is currently logged in to login server
+	return sessionKey
 
 def requestServerLogin(pt):
+	# comments describe the error codes defined for the protocol; however error code may be arbitrary b/c the client processes them all the same way?
 	sessionKey = pt[1:9]
 	serverID = pt[9]
-	# check if too many players
-	if (True):
-		return sessionKey
-	return "01"
+	# if (numPlayers >= maxPlayers):
+		#return "0f"	# 'too many players'
+	# if account is logged in to a gameserver already
+		#return "01"	# 'account in use'
+	# if sessionKey not valid
+		#return "03"	# 'invalid password'
+	return sessionKey
 
 while True:
 	conn, client = s.accept()
@@ -165,6 +194,7 @@ while True:
 			conn.close()
 			break
 		pt = b''.join(bf.decrypt_ecb(data))
+		# TODO verify checksum?
 
 		pktType = pt[0] & 0xff
 		if (pktType == 0):
