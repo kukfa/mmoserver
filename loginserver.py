@@ -18,7 +18,7 @@ gamePort = 7777
 maxPlayers = 20
 numPlayers = 0
 pvp = 0
-testServer = 1
+online = 1
 
 loginPort = 2106
 key = b"[;'.]94-31==-%&@!^+]\000"
@@ -112,8 +112,8 @@ def loginOk(conn, sessionKey):
 
 def serverList(conn):
 	data = b'\x04'	# packet ID
-	data += bytes([numServers])	# total # game servers available
-	data += b'\x00'	# fixed
+	data += bytes([numServers])	# total num game servers available
+	data += b'\x01'	# last game server used
 	# the following is repeated for each server
 	data += bytes([serverID])	# ID of each server (starting at 1)
 	data += ipaddress.IPv4Address(gameIP).packed	# gameserver IP, packed in big-endian order
@@ -122,8 +122,8 @@ def serverList(conn):
 	data += bytes([pvp])	# 1 if pvp server, otherwise 0
 	data += struct.pack("<H", numPlayers)	# current # of players
 	data += struct.pack("<H", maxPlayers)	# max # of players
-	data += bytes([testServer])	# 1 if test server, otherwise 0
-	if (testServer == 1):
+	data += bytes([online])	# 1 if server should be listed, otherwise 0
+	if (online == 1):
 		data += b'\x04\x00\x00\x00\x00'
 	else:
 		data += b'\x00\x00\x00\x00\x00'	# TODO doesn't list server if it isn't a test server
@@ -152,10 +152,11 @@ def playOk(conn, sessionKey):
 	sendPacket(conn, data)
 
 def requestAuthLogin(pt):
+	# these may be DES encrypted??
 	username = pt[2:15].decode('cp1252')
 	password = pt[16:30].decode('cp1252')
 	# TODO: fix decoding
-	print("RequestAuthLogin: " + username + ":" + password)
+	print("RequestAuthLogin: " + pt[2:15].hex() + ":" + pt[16:30].hex())
 	# if login invalid
 		#return "03"
 	# if account in (game or?) login server already
@@ -179,40 +180,43 @@ def requestServerLogin(pt):
 	return sessionKey
 
 while True:
-	conn, client = s.accept()
-	print("connection from: " + str(client))
-	initPacket(conn)	# send initial packet
-	while True:		# process subsequent packets	
-		lenLo = int.from_bytes(conn.recv(1), byteorder='big')
-		lenHi = int.from_bytes(conn.recv(1), byteorder='big')
-		length = lenHi * 256 + lenLo
-		if (lenHi < 0):
-			break
-		data = conn.recv(length-2)
-		if (len(data)+2 != length):
-			print("incomplete packet received")
-			conn.close()
-			break
-		pt = b''.join(bf.decrypt_ecb(data))
-		# TODO verify checksum?
+	try:
+		conn, client = s.accept()
+		print("connection from: " + str(client))
+		initPacket(conn)	# send initial packet
+		while True:		# process subsequent packets
+			lenLo = int.from_bytes(conn.recv(1), byteorder='big')
+			lenHi = int.from_bytes(conn.recv(1), byteorder='big')
+			length = lenHi * 256 + lenLo
+			if (lenHi < 0):
+				break
+			data = conn.recv(length-2)
+			if (len(data)+2 != length):
+				print("incomplete packet received")
+				conn.close()
+				break
+			pt = b''.join(bf.decrypt_ecb(data))
+			# TODO verify checksum?
 
-		pktType = pt[0] & 0xff
-		if (pktType == 0):
-			result = requestAuthLogin(pt)
-			if (type(result) is bytes):
-				loginOk(conn, result)
+			pktType = pt[0] & 0xff
+			if (pktType == 0):
+				result = requestAuthLogin(pt)
+				if (type(result) is bytes):
+					loginOk(conn, result)
+				else:
+					loginFail(conn, binascii.unhexlify(result))
+			elif (pktType == 2):
+				result = requestServerLogin(pt)
+				if (type(result) is bytes):
+					playOk(conn, result)
+				else:
+					playFail(conn, binascii.unhexlify(result))
+			elif (pktType == 5):
+				# requestServerList
+				serverList(conn)
 			else:
-				loginFail(conn, binascii.unhexlify(result))
-		elif (pktType == 2):
-			result = requestServerLogin(pt)
-			if (type(result) is bytes):
-				playOk(conn, result)
-			else:
-				playFail(conn, binascii.unhexlify(result))
-		elif (pktType == 5):
-			# requestServerList
-			serverList(conn)
-		else:
-			print("unknown packet: " + str(pktType))
-			conn.close()
-			break
+				print("unknown packet: " + str(pktType))
+				conn.close()
+				break
+	except ValueError:
+		conn.close()
