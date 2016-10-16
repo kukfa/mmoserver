@@ -7,6 +7,7 @@ import ipaddress
 import os
 import struct
 import sys
+from Crypto.Cipher import DES
 
 # gameServer info, hardcoded for now
 numServers = 1
@@ -23,12 +24,20 @@ online = 1
 loginPort = 2106
 key = b"[;'.]94-31==-%&@!^+]\000"
 bf = blowfish.Cipher(key, byte_order="little")
+des = DES.new(b'\x54\x45\x53\x54\x00\x00\x00\x00', DES.MODE_ECB)
+
 
 class LoginServer(asyncio.Protocol):
     def connection_made(self, transport):
-        print("Connection from: " + transport.get_extra_info('peername')[0])
         self.transport = transport
+        self.client = (transport.get_extra_info('peername')[0] + ":"    # IP
+            + str(transport.get_extra_info('peername')[1]))             # port
+        print("Connection from: " + self.client)
         self.initPacket()
+
+
+    def connection_lost(self, exc):
+        print("Connection closed: " + self.client)
 
 
     def data_received(self, data):
@@ -37,13 +46,12 @@ class LoginServer(asyncio.Protocol):
         length = lenHi * 256 + lenLo
 
         if (lenHi < 0):
-            closeSocket("Invalid packet length")
+            self.closeSocket("Invalid packet length")
 
         if (len(data) != length):
-            closeSocket("Incomplete packet received")
+            self.closeSocket("Incomplete packet received")
 
         pt = b''.join(bf.decrypt_ecb(data[2:]))
-        print(pt.hex())
         # TODO verify checksum?
         pktType = pt[0] & 0xff
 
@@ -164,7 +172,7 @@ class LoginServer(asyncio.Protocol):
         data += bytes([numServers])     # total num game servers available
         data += b'\x01'                 # last game server used
 
-        # the following is repeated for each server
+        # the following is repeated for each server:
         data += bytes([serverID])       # ID of each server (starting at 1)
         # gameserver IP, packed in big-endian order
         data += ipaddress.IPv4Address(gameIP).packed
@@ -208,9 +216,17 @@ class LoginServer(asyncio.Protocol):
 
 
     def requestAuthLogin(self, pt):
-        username = pt[1:15]
-        password = pt[15:31]
+        # TODO disallow & < characters (game HTML encodes them?)
+        creds = des.decrypt(pt[1:25])
+        username = creds[0:14].decode('ascii')
+        '''
+        not all of the credentials are DES-encrypted (due to 8 byte block
+        size), so some of the password spills over into the unencrypted part
+        ¯\_(ツ)_/¯
+        '''
+        password = (creds[14:25] + pt[25:31]).decode('ascii')
         # TODO: fix decoding
+        print("Login from " + self.client + ": " + username + ":" + password)
         # if login invalid
             # return "03"
         # if account in (game or?) login server already
@@ -244,7 +260,9 @@ def main():
     coroutine = loop.create_server(LoginServer, host=None, port=loginPort)
     server = loop.run_until_complete(coroutine)
     
-    print("Listening on: " + server.sockets[0].getsockname()[0])
+    for socket in server.sockets:
+        print("Listening on: " + socket.getsockname()[0] + ":" +
+            str(socket.getsockname()[1]))
     try:
         loop.run_forever()
     except KeyboardInterrupt:
