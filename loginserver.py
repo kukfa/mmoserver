@@ -21,7 +21,7 @@ numPlayers = 0
 pvp = 0
 online = 1
 
-loginPort = 2106
+loginPort = 2110
 key = b"[;'.]94-31==-%&@!^+]\000"
 bf = blowfish.Cipher(key, byte_order="little")
 des = DES.new(b'\x54\x45\x53\x54\x00\x00\x00\x00', DES.MODE_ECB)

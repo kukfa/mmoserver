@@ -37,8 +37,8 @@ class GatewayServer(asyncio.Protocol):
             else:
                 pass
         else:
-            self.testPacket()
-            #self.pkt0a()
+            #self.testPacket()
+            self.pkt1a()
 
 
     def sendZlibPacket1(self, pktType, data):
@@ -187,7 +187,7 @@ class GatewayServer(asyncio.Protocol):
     def pkt18(self):
         pktType = b'\x18'
         data = randomDataBlob
-        self.sendZlibPacket3(pktType, data) # TODO uses different structure
+        self.sendZlibPacket1(pktType, data)
 
 
     '''
@@ -200,7 +200,9 @@ class GatewayServer(asyncio.Protocol):
     def pkt1a(self):
         pktType = b'\x1a'
         channelType = b'\x0d'
-        data = channelType + b'\x00'*50
+        data = channelType + b'\x00'
+        self.sendZlibPacket3(pktType, data)
+        data = channelType + b'\x00\x01'
         self.sendZlibPacket3(pktType, data)
 
 
