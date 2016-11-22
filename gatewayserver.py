@@ -32,13 +32,16 @@ class GatewayServer(asyncio.Protocol):
             pktType = int(decompressed[0])
             if (pktType == 1):
                 self.initPacket()
-            #if (pktType == 4):
-                #self.testPacket()
+            if (pktType == 4):
+                self.loadZone()
+            if (pktType == 13):
+                self.pkt1a()
             else:
                 pass
         else:
+            pass
             #self.testPacket()
-            self.pkt1a()
+            #self.pkt1a()
 
 
     def sendZlibPacket1(self, pktType, data):
@@ -200,9 +203,18 @@ class GatewayServer(asyncio.Protocol):
     def pkt1a(self):
         pktType = b'\x1a'
         channelType = b'\x0d'
-        data = channelType + b'\x00'
+        data = channelType
+        # valid: 01, 02, 05
+        data += b'\x09'
         self.sendZlibPacket3(pktType, data)
-        data = channelType + b'\x00\x01'
+
+
+    # offshoot of pkt1a
+    def loadZone(self):
+        pktType = b'\x1a'
+        channelType = b'\x0d'
+        zoneToLoad = 'Town'
+        data = channelType + b'\x00' + zoneToLoad.encode('utf-8')
         self.sendZlibPacket3(pktType, data)
 
 
