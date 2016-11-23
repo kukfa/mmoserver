@@ -30,10 +30,15 @@ class GatewayServer(asyncio.Protocol):
         print("Decompressed: " + decompressed.hex())
         if (len(decompressed) > 0):
             pktType = int(decompressed[0])
+            secondByte = int(decompressed[1])
             if (pktType == 1):
                 self.initPacket()
             if (pktType == 4):
-                self.loadZone()
+                if (secondByte == 0):
+                    self.pkt02()
+                if (secondByte == 3):
+                    self.testPacket()
+                #self.loadZone('Town')
             if (pktType == 13):
                 self.pkt1a()
             else:
@@ -102,31 +107,45 @@ class GatewayServer(asyncio.Protocol):
         self.sendPacket(pktType, data)
 
 
-    # unknown
+    '''
+    valid channelTypes: 03, 04, 06, 07, 09
+    04 followed by 01: disconnected
+    04 followed by 02: characterCreated
+    04 followed by 03: gotCharacter
+    04 followed by 04: character creation
+    04 followed by 05: ?? (send 0900 packet)
+    0a: TradeRequested
+    0d: load into zone
+    '''
     def pkt02(self):
         pktType = b'\x02'
-        data = randomDataBlob
-        self.sendZlibPacket1(pktType, data)
+        padding = b'\x66\x66\x66'
+        channelType = b'\x04'
+        data = padding + channelType + b'\x00' + randomDataBlob*3
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket1(pktType, data)
 
 
-    # unknown
+    # unknown, no idea if this is zlib or not
     def pkt04(self):
         pktType = b'\x04'
-        data = randomDataBlob*3
-        self.sendZlibPacket1(pktType, data)
+        data = b'\x00\x00'
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket1(pktType, data)
 
 
-    # unknown
+    # unknown, no idea if this is zlib or not
     def pkt06(self):
         pktType = b'\x06'
-        data = randomDataBlob
-        self.sendZlibPacket1(pktType, data)
+        data = b'\x00'
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket1(pktType, data)
 
 
     # unknown
     def pkt08(self):
         pktType = b'\x08'
-        data = randomDataBlob
+        data = b'\x05\xBA\xAD\xF0\x0D'*10
         self.sendZlibPacket1(pktType, data)
 
 
@@ -147,7 +166,7 @@ class GatewayServer(asyncio.Protocol):
     # unknown
     def pkt0c(self):
         pktType = b'\x0c'
-        data = randomDataBlob
+        data = b'\x00'#randomDataBlob*3
         self.sendZlibPacket2(pktType, data)
 
 
@@ -155,14 +174,15 @@ class GatewayServer(asyncio.Protocol):
     def pkt0e(self):
         pktType = b'\x0e'
         data = randomDataBlob
-        self.sendZlibPacket2(pktType, data)
+        self.sendZlibPacket1(pktType, data)
 
 
     # unknown
     def pkt10(self):
         pktType = b'\x10'
-        data = randomDataBlob
-        self.sendZlibPacket2(pktType, data) # both 2 and 3 work?
+        data = b'\x00'
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket2(pktType, data) # both 2 and 3 work?
 
 
     # unknown
@@ -205,23 +225,34 @@ class GatewayServer(asyncio.Protocol):
         channelType = b'\x0d'
         data = channelType
         # valid: 01, 02, 05
-        data += b'\x09'
+        data += b'\x01' + 'Start'.encode('utf-8')
+        self.sendZlibPacket3(pktType, data)
+
+        data = channelType + b'\x05'
+        self.sendZlibPacket3(pktType, data)
+        
+        data = channelType + b'\x02'
         self.sendZlibPacket3(pktType, data)
 
 
     # offshoot of pkt1a
-    def loadZone(self):
+    # valid zoneToLoad: Town, pvp_start
+    # Spawnpoints(?): Start, Waypoint, Respawn
+    def loadZone(self, zoneToLoad):
         pktType = b'\x1a'
         channelType = b'\x0d'
-        zoneToLoad = 'Town'
         data = channelType + b'\x00' + zoneToLoad.encode('utf-8')
         self.sendZlibPacket3(pktType, data)
 
 
     def testPacket(self):
-        pktType = b'\x18'
-        data = randomDataBlob
-        self.sendZlibPacket3(pktType, data)
+        pktType = b'\x02'
+        padding = b'\x66\x66\x66'
+        channelType = b'\x04'
+        data = padding + channelType + b'\x03'
+        data += b'\x6c\x6f\x6c\x00\x61\x76\x61\x74\x61\x72\x2e\x63\x6c\x61\x73\x73\x65\x73\x2e\x46\x69\x67\x68\x74\x65\x72\x46\x65\x6d\x61\x6c\x65\x00\x00\x09\x00\x00\x00'
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket1(pktType, data)
 
 
 def main():
