@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import asyncio
+import binascii
 import struct
 import zlib
 
@@ -36,9 +37,17 @@ class GatewayServer(asyncio.Protocol):
             if (pktType == 4):
                 if (secondByte == 0):
                     self.pkt02()
+                    #self.testPacket()
+                if (secondByte == 2):
+                    #self.testPacket()
+                    pass
                 if (secondByte == 3):
+                    #self.testPacket2()
                     self.testPacket()
-                #self.loadZone('Town')
+                    #pass
+            if (pktType == 9):
+                #self.testPacket2()
+                self.loadZone('Town')
             if (pktType == 13):
                 self.pkt1a()
             else:
@@ -109,6 +118,7 @@ class GatewayServer(asyncio.Protocol):
 
     '''
     valid channelTypes: 03, 04, 06, 07, 09
+    04 followed by 00: connected
     04 followed by 01: disconnected
     04 followed by 02: characterCreated
     04 followed by 03: gotCharacter
@@ -119,9 +129,9 @@ class GatewayServer(asyncio.Protocol):
     '''
     def pkt02(self):
         pktType = b'\x02'
-        padding = b'\x66\x66\x66'
+        padding = b'\x55\x55\x55'
         channelType = b'\x04'
-        data = padding + channelType + b'\x00' + randomDataBlob*3
+        data = padding + channelType + b'\x00'
         self.sendPacket(pktType, data)
         #self.sendZlibPacket1(pktType, data)
 
@@ -142,10 +152,10 @@ class GatewayServer(asyncio.Protocol):
         #self.sendZlibPacket1(pktType, data)
 
 
-    # unknown
+    # playOk?
     def pkt08(self):
         pktType = b'\x08'
-        data = b'\x05\xBA\xAD\xF0\x0D'*10
+        data = b'\x03'
         self.sendZlibPacket1(pktType, data)
 
 
@@ -250,9 +260,26 @@ class GatewayServer(asyncio.Protocol):
         padding = b'\x66\x66\x66'
         channelType = b'\x04'
         data = padding + channelType + b'\x03'
-        data += b'\x6c\x6f\x6c\x00\x61\x76\x61\x74\x61\x72\x2e\x63\x6c\x61\x73\x73\x65\x73\x2e\x46\x69\x67\x68\x74\x65\x72\x46\x65\x6d\x61\x6c\x65\x00\x00\x09\x00\x00\x00'
+        data += b'\x01\x02\x03\x04\x05'
+        data += b'\x2D'                             # version number
+        #data += "Equipment".encode('utf-8') + b'\x00'  # DFCClass name
+        data += b'\xf2\xb1\xe0\x64'[::-1]
+        data += b'\x00'*9
+        data += b'\x0D\xF0\xAD\xBA'
+        #data += binascii.unhexlify('00DE8600010000000DF0ADBA0DF0ADBA0000000000000000000000000000000000000000000000000CF0ADBA0DF0ADBA54DF86002808A7060DF0ADBA0C0B8B00000000000DF0ADBA3804A7060CF0ADBA0DF0ADBA00000000000000000000000040FAADBA0DF0ADBA58DF86000DF0ADBA1004A706000000000DF0ADBA0DF0ADBA0000000000000000000000000DF0ADBA000000000000000000000000000000000680')
         self.sendPacket(pktType, data)
-        #self.sendZlibPacket1(pktType, data)
+
+
+    def testPacket2(self):
+        pktType = b'\x02'
+        padding = b'\x66\x66\x66'
+        channelType = b'\x04'
+        data = padding + channelType + b'\x04'
+        data += b'\x01\x02\x03\x04\x05'
+        data += b'\x28'
+        data += 'Avatar'.encode('utf-8') + b'\x00'
+        data += binascii.unhexlify('00DE8600010000000DF0ADBA9DF0ADBA')
+        self.sendPacket(pktType, data)
 
 
 def main():
