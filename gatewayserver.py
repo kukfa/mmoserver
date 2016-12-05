@@ -44,6 +44,7 @@ class GatewayServer(asyncio.Protocol):
                 if (secondByte == 3):
                     #self.testPacket2()
                     self.testPacket()
+                    #self.testCharCreate()
                     #pass
             if (pktType == 9):
                 #self.testPacket2()
@@ -263,10 +264,35 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x01\x02\x03\x04\x05'
         data += b'\x2D'                             # version number
         #data += "Equipment".encode('utf-8') + b'\x00'  # DFCClass name
-        data += b'\xf2\xb1\xe0\x64'[::-1]
-        data += b'\x00'*9
-        data += b'\x0D\xF0\xAD\xBA'
-        #data += binascii.unhexlify('00DE8600010000000DF0ADBA0DF0ADBA0000000000000000000000000000000000000000000000000CF0ADBA0DF0ADBA54DF86002808A7060DF0ADBA0C0B8B00000000000DF0ADBA3804A7060CF0ADBA0DF0ADBA00000000000000000000000040FAADBA0DF0ADBA58DF86000DF0ADBA1004A706000000000DF0ADBA0DF0ADBA0000000000000000000000000DF0ADBA000000000000000000000000000000000680')
+        data += b'\xf2\xb1\xe0\x64'[::-1]           # native class -> Avatar
+        data += b'\x00'*9                           # filler?
+        data += b'\xf2\xb1\xe0\x64'[::-1]           # GCobject -> Avatar
+
+        data += b'\x7C\x9D\xF4\x3A'[::-1]           # Property -> Skin
+        data += b'\x00'*4
+
+        data += b'\x7C\x96\xa7\xf4'[::-1]           # Property -> Face
+        data += b'\x00'*4
+
+        data += b'\x76\xdd\xcf\x80'[::-1]           # Property -> FaceFeature
+        data += b'\x00'*4
+
+        data += b'\x7c\x97\xc1\x89'[::-1]           # Property -> Hair
+        data += b'\x00'*4
+
+        data += b'\x6d\x69\x51\x48'[::-1]           # Property -> HairColor
+        data += b'\x00'*4
+
+        data += b'\x9b\xa4\x6f\x80'[::-1]           # Property -> TotalWorldTime
+        data += b'\x00\x00\x00\x00'
+
+        data += b'\x11\x01\xe4\xa3'[::-1]       # Property -> LastKnownQueueLevel
+        data += b'\x00'*4
+
+        data += b'\xc3\x4e\x12\xc3'[::-1]           # Property -> HasBlingGnome
+        data += b'\x00'*4
+
+        data += b'\x00'*4
         self.sendPacket(pktType, data)
 
 
@@ -274,11 +300,23 @@ class GatewayServer(asyncio.Protocol):
         pktType = b'\x02'
         padding = b'\x66\x66\x66'
         channelType = b'\x04'
-        data = padding + channelType + b'\x04'
+        data = padding + channelType + b'\x03'
         data += b'\x01\x02\x03\x04\x05'
-        data += b'\x28'
+        data += b'\x29'
+        className = 'HasBlingGnome'
+        data += className.encode('utf-8') + b'\x00'
+        data += b'\x00'*9
+        data += b'\x29'
         data += 'Avatar'.encode('utf-8') + b'\x00'
-        data += binascii.unhexlify('00DE8600010000000DF0ADBA9DF0ADBA')
+        data += b'\x00'*9
+        self.sendPacket(pktType, data)
+
+
+    def testCharCreate(self):
+        pktType = b'\x02'
+        padding = b'\x66\x66\x66'
+        channelType = b'\x04'
+        data = padding + channelType + b'\x04'
         self.sendPacket(pktType, data)
 
 
