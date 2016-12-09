@@ -263,12 +263,26 @@ class GatewayServer(asyncio.Protocol):
         data = padding + channelType + b'\x03'
         data += b'\x01\x02\x03\x04\x05'
         data += b'\x2D'                             # version number
-        #data += "Equipment".encode('utf-8') + b'\x00'  # DFCClass name
+
+        data += b'\x14\xfa\x62\x92'[::-1]           # native class -> Player
+        data += b'\x00'*9
+        data += b'\x14\xfa\x62\x92'[::-1]           # GCObject -> Player
+
+
+        data += b'\x00'*4
+
+        data += 'test'.encode('utf-8') + b'\x00'
+        data += 'avatar.classes.FighterMale'.encode('utf-8') + b'\x00'
+
+        data += b'\x00'*4
+        data += b'\x00'*4
+
+        data += b'\x2d'
         data += b'\xf2\xb1\xe0\x64'[::-1]           # native class -> Avatar
         data += b'\x00'*9                           # filler?
         data += b'\xf2\xb1\xe0\x64'[::-1]           # GCobject -> Avatar
 
-        data += b'\x7C\x9D\xF4\x3A'[::-1]           # Property -> Skin
+        data += b'\x7C\x9D\xF4\x3a'[::-1]           # Property -> Skin
         data += b'\x00'*4
 
         data += b'\x7C\x96\xa7\xf4'[::-1]           # Property -> Face
@@ -284,14 +298,17 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00'*4
 
         data += b'\x9b\xa4\x6f\x80'[::-1]           # Property -> TotalWorldTime
-        data += b'\x00\x00\x00\x00'
+        data += b'\x01'*4
 
         data += b'\x11\x01\xe4\xa3'[::-1]       # Property -> LastKnownQueueLevel
-        data += b'\x00'*4
+        data += b'\x01'*4
 
         data += b'\xc3\x4e\x12\xc3'[::-1]           # Property -> HasBlingGnome
         data += b'\x00'*4
+        
+        data += b'\x00'*4
 
+        data += b'\xAA'
         data += b'\x00'*4
         self.sendPacket(pktType, data)
 
@@ -303,7 +320,7 @@ class GatewayServer(asyncio.Protocol):
         data = padding + channelType + b'\x03'
         data += b'\x01\x02\x03\x04\x05'
         data += b'\x29'
-        className = 'HasBlingGnome'
+        className = 'Level'
         data += className.encode('utf-8') + b'\x00'
         data += b'\x00'*9
         data += b'\x29'
