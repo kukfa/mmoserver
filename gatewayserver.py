@@ -279,7 +279,11 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x2d'
         data += b'\xf2\xb1\xe0\x64'[::-1]           # native class -> Avatar
-        data += b'\x00'*9                           # filler?
+
+        data += b'\x00'*5
+        data += b'\x5B\xB7\xBF\x9D'[::-1]           # DFCNode -> Equipment
+        data += b'\x00'*1
+
         data += b'\xf2\xb1\xe0\x64'[::-1]           # GCobject -> Avatar
 
         data += b'\x7C\x9D\xF4\x3a'[::-1]           # Property -> Skin
@@ -320,7 +324,7 @@ class GatewayServer(asyncio.Protocol):
         data = padding + channelType + b'\x03'
         data += b'\x01\x02\x03\x04\x05'
         data += b'\x29'
-        className = 'Level'
+        className = 'Equipment'
         data += className.encode('utf-8') + b'\x00'
         data += b'\x00'*9
         data += b'\x29'
