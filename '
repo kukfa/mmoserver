@@ -42,8 +42,8 @@ class GatewayServer(asyncio.Protocol):
                     #self.testPacket()
                     pass
                 if (secondByte == 3):
-                    #self.testPacket2()
-                    self.testPacket()
+                    self.testPacket2()
+                    #self.testPacket()
                     #self.testCharCreate()
                     #pass
             if (pktType == 9):
@@ -281,48 +281,13 @@ class GatewayServer(asyncio.Protocol):
         data += b'\xf2\xb1\xe0\x64'[::-1]           # native class -> Avatar
 
         data += b'\x00'*5
-        data += b'\x00\x00\x00\x05'[::-1]           # number of nodes to read
-                                                    # @@@ MODIFIED @@@
-
-        data += b'\x2d'
-        data += b'\x09\xc2\x6f\x07'[::-1]           # Node -> Modifiers
-        data += b'\x00'*9
-        data += b'\x09\xc2\x6f\x07'[::-1]
-        data += b'\x00'*4
-
-        data += b'\x2d'
-        data += b'\xca\x2b\xc0\xc4'[::-1]           # Node -> Manipulators
-        data += b'\x00'*9
-        data += b'\xca\x2b\xc0\xc4'[::-1]
-        data += b'\x00'*4
-        
-        '''
-        data += b'\x2d'
-        data += b'\x40\x0e\xd1\x75'[::-1]           # Node -> UnitBehavior
-        data += b'\x00'*9
-        data += b'\x40\x0e\xd1\x75'[::-1]
-        data += b'\x00'*4
-        '''
-
-        data += b'\x2d'
-        data += b'\x1b\xeb\xf0\x97'[::-1]           # Node -> Skills
-        data += b'\x00'*9
-        data += b'\x1b\xeb\xf0\x97'[::-1]
-        data += b'\x00'*4
+        data += b'\x00\x00\x00\x01'[::-1]           # number of nodes to read
 
         data += b'\x2d'
         data += b'\x5b\xb7\xbf\x9d'[::-1]           # Node -> Equipment
         data += b'\x00'*9
         data += b'\x5b\xb7\xbf\x9d'[::-1]
         data += b'\x00'*4
-
-        data += b'\x2d'
-        data += b'\xe9\xab\x2a\x48'[::-1]           # Node -> UnitContainer
-        data += b'\x00'*9
-        data += b'\xe9\xab\x2a\x48'[::-1]
-        data += b'\x00'*4
-
-        data += b'\x00'
 
         data += b'\xf2\xb1\xe0\x64'[::-1]           # GCobject -> Avatar
 
@@ -364,7 +329,7 @@ class GatewayServer(asyncio.Protocol):
         data = padding + channelType + b'\x03'
         data += b'\x01\x02\x03\x04\x05'
         data += b'\x29'
-        className = 'avatar.classes.FighterMale'
+        className = 'UnitContainer'
         data += className.encode('utf-8') + b'\x00'
         data += b'\x00'*9
         data += b'\x29'
