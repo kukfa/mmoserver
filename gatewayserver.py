@@ -272,7 +272,7 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00'*4
 
         data += 'test'.encode('utf-8') + b'\x00'
-        data += 'avatar.classes.FighterMale'.encode('utf-8') + b'\x00'
+        data += 'FighterMale'.encode('utf-8') + b'\x00'
 
         data += b'\x00'*4
         data += b'\x00'*4
@@ -281,8 +281,7 @@ class GatewayServer(asyncio.Protocol):
         data += b'\xf2\xb1\xe0\x64'[::-1]           # native class -> Avatar
 
         data += b'\x00'*5
-        data += b'\x00\x00\x00\x05'[::-1]           # number of nodes to read
-                                                    # @@@ MODIFIED @@@
+        data += b'\x00\x00\x00\x06'[::-1]           # number of nodes to read
 
         data += b'\x2d'
         data += b'\x09\xc2\x6f\x07'[::-1]           # Node -> Modifiers
@@ -296,13 +295,11 @@ class GatewayServer(asyncio.Protocol):
         data += b'\xca\x2b\xc0\xc4'[::-1]
         data += b'\x00'*4
         
-        '''
         data += b'\x2d'
         data += b'\x40\x0e\xd1\x75'[::-1]           # Node -> UnitBehavior
         data += b'\x00'*9
         data += b'\x40\x0e\xd1\x75'[::-1]
         data += b'\x00'*4
-        '''
 
         data += b'\x2d'
         data += b'\x1b\xeb\xf0\x97'[::-1]           # Node -> Skills
@@ -324,7 +321,7 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x00'
 
-        data += b'\xf2\xb1\xe0\x64'[::-1]           # GCobject -> Avatar
+        data += b'\x74\xf0\x57\xd6'[::-1]           # GCObject -> FighterMale
 
         data += b'\x7C\x9D\xF4\x3a'[::-1]           # Property -> Skin
         data += b'\x00'*4
@@ -364,7 +361,7 @@ class GatewayServer(asyncio.Protocol):
         data = padding + channelType + b'\x03'
         data += b'\x01\x02\x03\x04\x05'
         data += b'\x29'
-        className = 'avatar.classes.FighterMale'
+        className = 'Archetype'
         data += className.encode('utf-8') + b'\x00'
         data += b'\x00'*9
         data += b'\x29'
