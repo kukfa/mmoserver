@@ -298,7 +298,7 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x2d'
         data += b'\x40\x0e\xd1\x75'[::-1]           # Node -> UnitBehavior
         data += b'\x00'*9
-        data += b'\x40\x0e\xd1\x75'[::-1]
+        data += b'\xD7\x2C\x9E\x4B'[::-1]   # node GCObject -> DefaultBehaviorObject
         data += b'\x00'*4
 
         data += b'\x2d'
@@ -361,7 +361,7 @@ class GatewayServer(asyncio.Protocol):
         data = padding + channelType + b'\x03'
         data += b'\x01\x02\x03\x04\x05'
         data += b'\x29'
-        className = 'Archetype'
+        className = 'avatar.base.UnitBehavior'
         data += className.encode('utf-8') + b'\x00'
         data += b'\x00'*9
         data += b'\x29'
