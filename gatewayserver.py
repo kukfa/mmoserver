@@ -3,6 +3,7 @@
 import asyncio
 import binascii
 import struct
+import time
 import zlib
 
 gatewayPort = 7777
@@ -42,12 +43,16 @@ class GatewayServer(asyncio.Protocol):
                     pass
                 if (secondByte == 3):
                     self.sendCharacter()
+                if (secondByte == 5):
+                    self.confirmCharSelection(decompressed[2:])
 
             if (pktType == 9):
                 self.loadZone('Town')
 
             if (pktType == 13):
-                self.pkt1a()
+                self.testPacket()
+                self.connectClientEntityManager()
+
             else:
                 pass
         else:
@@ -118,6 +123,32 @@ class GatewayServer(asyncio.Protocol):
         channelType = b'\x04'
         data = padding + channelType + b'\x00'
         self.sendPacket(pktType, data)
+
+
+    def confirmCharSelection(self, charID):
+        pktType = b'\x02'
+        padding = b'\x66'*3
+        channelType = b'\x04'
+        data = padding + channelType + b'\x05'
+        data += charID
+        self.sendPacket(pktType, data)
+
+
+    def testPacket(self):
+        pktType = b'\x1a'
+        channelType = b'\x0d'
+        data = channelType + b'\x01' + b'\x99'*4
+        self.sendZlibPacket3(pktType, data)
+
+        data = channelType + b'\x05' + b'\x88'*4 + b'\x77'*4
+        self.sendZlibPacket3(pktType, data)
+
+
+    def connectClientEntityManager(self):
+        pktType = b'\x1a'
+        channelType = b'\x07'
+        data = channelType + b'\x46' + b'\x99'*4
+        self.sendZlibPacket3(b'\x1a', data)
 
 
     # valid zoneToLoad: Town, pvp_start
