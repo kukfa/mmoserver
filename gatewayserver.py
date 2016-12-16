@@ -6,7 +6,6 @@ import struct
 import zlib
 
 gatewayPort = 7777
-randomDataBlob = b'\xa4\x61\xb8\x29\xa2\xae\xf4\xf8\xf1\xe0\x63\xa0\x27\x05\x62\xb0\x4e\xed\x8e\xa9'
 
 
 class GatewayServer(asyncio.Protocol):
@@ -32,31 +31,27 @@ class GatewayServer(asyncio.Protocol):
         if (len(decompressed) > 0):
             pktType = int(decompressed[0])
             secondByte = int(decompressed[1])
+
             if (pktType == 1):
                 self.initPacket()
+
             if (pktType == 4):
                 if (secondByte == 0):
-                    self.pkt02()
-                    #self.testPacket()
+                    self.connectedPkt()
                 if (secondByte == 2):
-                    #self.testPacket()
                     pass
                 if (secondByte == 3):
-                    #self.testPacket2()
-                    self.testPacket()
-                    #self.testCharCreate()
-                    #pass
+                    self.sendCharacter()
+
             if (pktType == 9):
-                #self.testPacket2()
                 self.loadZone('Town')
+
             if (pktType == 13):
                 self.pkt1a()
             else:
                 pass
         else:
             pass
-            #self.testPacket()
-            #self.pkt1a()
 
 
     def sendZlibPacket1(self, pktType, data):
@@ -117,136 +112,14 @@ class GatewayServer(asyncio.Protocol):
         self.sendPacket(pktType, data)
 
 
-    '''
-    valid channelTypes: 03, 04, 06, 07, 09
-    04 followed by 00: connected
-    04 followed by 01: disconnected
-    04 followed by 02: characterCreated
-    04 followed by 03: gotCharacter
-    04 followed by 04: character creation
-    04 followed by 05: ?? (send 0900 packet)
-    0a: TradeRequested
-    0d: load into zone
-    '''
-    def pkt02(self):
+    def connectedPkt(self):
         pktType = b'\x02'
-        padding = b'\x55\x55\x55'
+        padding = b'\x55'*3
         channelType = b'\x04'
         data = padding + channelType + b'\x00'
         self.sendPacket(pktType, data)
-        #self.sendZlibPacket1(pktType, data)
 
 
-    # unknown, no idea if this is zlib or not
-    def pkt04(self):
-        pktType = b'\x04'
-        data = b'\x00\x00'
-        self.sendPacket(pktType, data)
-        #self.sendZlibPacket1(pktType, data)
-
-
-    # unknown, no idea if this is zlib or not
-    def pkt06(self):
-        pktType = b'\x06'
-        data = b'\x00'
-        self.sendPacket(pktType, data)
-        #self.sendZlibPacket1(pktType, data)
-
-
-    # playOk?
-    def pkt08(self):
-        pktType = b'\x08'
-        data = b'\x03'
-        self.sendZlibPacket1(pktType, data)
-
-
-    '''
-    Known valid channelTypes (tested through 0d)
-    ---
-    unknown purpose: 03, 04, 06, 07, 09
-    0a: TradeRequested
-    0d: load into zone
-    '''
-    def pkt0a(self):
-        pktType = b'\x0a'
-        channelType = b'\x0d'
-        data = channelType + b'\x00'*50
-        self.sendZlibPacket3(pktType, data)
-
-
-    # unknown
-    def pkt0c(self):
-        pktType = b'\x0c'
-        data = b'\x00'#randomDataBlob*3
-        self.sendZlibPacket2(pktType, data)
-
-
-    # unknown
-    def pkt0e(self):
-        pktType = b'\x0e'
-        data = randomDataBlob
-        self.sendZlibPacket1(pktType, data)
-
-
-    # unknown
-    def pkt10(self):
-        pktType = b'\x10'
-        data = b'\x00'
-        self.sendPacket(pktType, data)
-        #self.sendZlibPacket2(pktType, data) # both 2 and 3 work?
-
-
-    # unknown
-    def pkt12(self):
-        pktType = b'\x12'
-        data = randomDataBlob
-        self.sendZlibPacket2(pktType, data) # might have different structure
-
-
-    # unknown
-    def pkt14(self):
-        pktType = b'\x14'
-        data = randomDataBlob
-        self.sendZlibPacket2(pktType, data)
-
-
-    # unknown
-    def pkt16(self):
-        pktType = b'\x16'
-        data = randomDataBlob
-        self.sendZlibPacket2(pktType, data)
-
-
-    # unknown
-    def pkt18(self):
-        pktType = b'\x18'
-        data = randomDataBlob
-        self.sendZlibPacket1(pktType, data)
-
-
-    '''
-    Known valid channelTypes (tested through 1f)
-    ---
-    unknown purpose: 04, 06, 07, 09, 0f
-    0a: TradeRequested
-    0d: load into zone
-    '''
-    def pkt1a(self):
-        pktType = b'\x1a'
-        channelType = b'\x0d'
-        data = channelType
-        # valid: 01, 02, 05
-        data += b'\x01' + 'Start'.encode('utf-8')
-        self.sendZlibPacket3(pktType, data)
-
-        data = channelType + b'\x05'
-        self.sendZlibPacket3(pktType, data)
-        
-        data = channelType + b'\x02'
-        self.sendZlibPacket3(pktType, data)
-
-
-    # offshoot of pkt1a
     # valid zoneToLoad: Town, pvp_start
     # Spawnpoints(?): Start, Waypoint, Respawn
     def loadZone(self, zoneToLoad):
@@ -256,12 +129,13 @@ class GatewayServer(asyncio.Protocol):
         self.sendZlibPacket3(pktType, data)
 
 
-    def testPacket(self):
+    def sendCharacter(self):
         pktType = b'\x02'
         padding = b'\x66\x66\x66'
         channelType = b'\x04'
         data = padding + channelType + b'\x03'
-        data += b'\x01\x02\x03\x04\x05'
+        data += b'\x01'
+        data += b'\x02\x03\x04\x05'                 # character ID
         data += b'\x2D'                             # version number
 
         data += b'\x14\xfa\x62\x92'[::-1]           # native class -> Player
@@ -271,8 +145,8 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x00'*4
 
-        data += 'test'.encode('utf-8') + b'\x00'
-        data += 'FighterMale'.encode('utf-8') + b'\x00'
+        data += 'test111'.encode('utf-8') + b'\x00'
+        data += 'test222'.encode('utf-8') + b'\x00'
 
         data += b'\x00'*4
         data += b'\x00'*4
@@ -298,19 +172,19 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x2d'
         data += b'\x40\x0e\xd1\x75'[::-1]           # Node -> UnitBehavior
         data += b'\x00'*9
-        data += b'\xD7\x2C\x9E\x4B'[::-1]   # node GCObject -> DefaultBehaviorObject
+        data += b'\xD7\x2C\x9E\x4B'[::-1]           # node GCObject -> avatar.base.UnitBehavior
         data += b'\x00'*4
 
         data += b'\x2d'
         data += b'\x1b\xeb\xf0\x97'[::-1]           # Node -> Skills
         data += b'\x00'*9
-        data += b'\x1b\xeb\xf0\x97'[::-1]
+        data += b'\x81\xBE\x54\xED'[::-1]           # node GCObject ->avatar.base.Skills
         data += b'\x00'*4
 
         data += b'\x2d'
         data += b'\x5b\xb7\xbf\x9d'[::-1]           # Node -> Equipment
         data += b'\x00'*9
-        data += b'\x5b\xb7\xbf\x9d'[::-1]
+        data += b'\xff\x4e\xcc\x33'[::-1]           # node GCObject -> avatar.base.Equipment
         data += b'\x00'*4
 
         data += b'\x2d'
@@ -341,7 +215,7 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x9b\xa4\x6f\x80'[::-1]           # Property -> TotalWorldTime
         data += b'\x01'*4
 
-        data += b'\x11\x01\xe4\xa3'[::-1]       # Property -> LastKnownQueueLevel
+        data += b'\x11\x01\xe4\xa3'[::-1]           # Property -> LastKnownQueueLevel
         data += b'\x01'*4
 
         data += b'\xc3\x4e\x12\xc3'[::-1]           # Property -> HasBlingGnome
@@ -354,23 +228,20 @@ class GatewayServer(asyncio.Protocol):
         self.sendPacket(pktType, data)
 
 
-    def testPacket2(self):
+    # used to trigger client-side hashing function
+    def clientHash(self):
         pktType = b'\x02'
         padding = b'\x66\x66\x66'
         channelType = b'\x04'
         data = padding + channelType + b'\x03'
         data += b'\x01\x02\x03\x04\x05'
         data += b'\x29'
-        className = 'avatar.base.UnitBehavior'
-        data += className.encode('utf-8') + b'\x00'
-        data += b'\x00'*9
-        data += b'\x29'
-        data += 'Avatar'.encode('utf-8') + b'\x00'
-        data += b'\x00'*9
+        hashName = 'FighterStartingEquipment'
+        data += hashName.encode('utf-8') + b'\x00'
         self.sendPacket(pktType, data)
 
 
-    def testCharCreate(self):
+    def charCreate(self):
         pktType = b'\x02'
         padding = b'\x66\x66\x66'
         channelType = b'\x04'
