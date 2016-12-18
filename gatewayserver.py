@@ -51,6 +51,7 @@ class GatewayServer(asyncio.Protocol):
 
             if (pktType == 13):
                 self.testPacket()
+                self.pathmanagerBudget()
                 self.connectClientEntityManager()
 
             else:
@@ -141,6 +142,20 @@ class GatewayServer(asyncio.Protocol):
         self.sendZlibPacket3(pktType, data)
 
         data = channelType + b'\x05' + b'\x88'*4 + b'\x77'*4
+        self.sendZlibPacket3(pktType, data)
+
+
+    def pathmanagerBudget(self):
+        pktType = b'\x1a'
+        channelType = b'\x07'
+        data = channelType + b'\x0d'
+        data += b'\x00'*4
+        data += b'\x00'*4
+        data += b'\x00'*4
+
+        data += b'\x66'*4
+        data += b'\x00\x1e'[::-1]                   # perUpdate
+        data += b'\x00\x07'[::-1]                   # perPath
         self.sendZlibPacket3(pktType, data)
 
 
