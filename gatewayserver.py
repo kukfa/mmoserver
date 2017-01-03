@@ -37,12 +37,15 @@ class GatewayServer(asyncio.Protocol):
                 self.initPacket()
 
             if (pktType == 3):
+                if (secondByte == 0):
+                    self.connectUserManagerClient()
                 if (secondByte == 1):
                     self.rosterUserManagerClient()
+                    self.connectCharacterManagerClient()
 
             if (pktType == 4):
                 if (secondByte == 0):
-                    self.connectedPkt()
+                    self.connectCharacterManagerClient()
                 if (secondByte == 2):
                     pass
                 if (secondByte == 3):
@@ -52,16 +55,22 @@ class GatewayServer(asyncio.Protocol):
                     self.confirmCharSelection(decompressed[2:])
 
             if (pktType == 9):
-                #self.testPacket()
-                self.loadZone('Town')
+                if (secondByte == 0):
+                    self.connectGroupClient()
+                    self.addUserGroupClient()
+                    self.loadZone('Town')
 
             if (pktType == 13):
                 if (secondByte == 6):
-                    self.connectUserManagerClient()
                     self.zoneClientInit()
+                    time.sleep(1)
                     self.pathManagerBudget()
+                    time.sleep(1)
                     #self.testEntityCreate()
+                    #self.testPacket()
+                    time.sleep(1)
                     self.connectClientEntityManager()
+                    #self.testPacket()
 
             else:
                 pass
@@ -118,18 +127,21 @@ class GatewayServer(asyncio.Protocol):
 
 
     def initPacket(self):
-        pktType = b'\x08'
-        data = b'\x03\xBA\xAD\xF0\x0D'
-        self.sendZlibPacket1(pktType, data)
+        pktType = b'\x02' #08
+        padding = b'\x01' + b'\x00\x32'[::-1]
+        data = padding + b'\x03'#\xBA\xAD\xF0\x0D'
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket1(pktType, data)
 
         pktType = b'\x02'
-        data = b'\x00\x03\x00'
+        data = b'\x00' + b'\x03\x00'
+        data += b'\x01' + b'\x00\x32'[::-1]
         self.sendPacket(pktType, data)
 
 
-    def connectedPkt(self):
+    def connectCharacterManagerClient(self):
         pktType = b'\x02'
-        padding = b'\x55'*3
+        padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x04'
         data = padding + channelType + b'\x00'
         self.sendPacket(pktType, data)
@@ -137,23 +149,49 @@ class GatewayServer(asyncio.Protocol):
 
     def confirmCharSelection(self, charID):
         pktType = b'\x02'
-        padding = b'\x66'*3
+        padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x04'
         data = padding + channelType + b'\x05'
         data += charID
         self.sendPacket(pktType, data)
 
 
-    def testPacket(self):
-        pktType = b'\x1a'
+    def connectGroupClient(self):
+        pktType = b'\x02'
         channelType = b'\x09'
-        data = channelType + b'\x00'
-        self.sendZlibPacket3(pktType, data)
+        data = b'\x01' + b'\x00\x32'[::-1]
+        data += channelType + b'\x30'
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x01'
+        data += b'\x01'
+        self.sendPacket(pktType, data)
+
+
+    def addUserGroupClient(self):
+        pktType = b'\x02'
+        channelType = b'\x09'
+        data = b'\x01' + b'\x00\x32'[::-1]
+        data += channelType + b'\x42'
+        data += b'\x00'*4
+
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += 'testchar'.encode('utf-8') + b'\x00'
+        data += b'\x00'*4
+        data += b'\x00'
+        self.sendPacket(pktType, data)
+
+
+    def testPacket(self):
+        pktType = b'\x02'
+        channelType = b'\x07'
+        data = b'\x01' + b'\x00\x0c'[::-1]
+        data += channelType + b'\x14\x06'
+        self.sendPacket(pktType, data)
 
 
     def connectUserManagerClient(self):
         pktType = b'\x02'
-        padding = b'\x55'*3
+        padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x03'
         data = padding + channelType + b'\x00'
         data += 'testString'.encode('utf-8') + b'\x00'
@@ -162,7 +200,7 @@ class GatewayServer(asyncio.Protocol):
 
     def rosterUserManagerClient(self):
         pktType = b'\x02'
-        padding = b'\x55'*3
+        padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x03'
         data = padding + channelType + b'\x01'
         data += b'\x01' + b'\x01'
@@ -191,20 +229,26 @@ class GatewayServer(asyncio.Protocol):
 
 
     def zoneClientInit(self):
-        pktType = b'\x1a'
+        pktType = b'\x02' #1a'
         channelType = b'\x0d'
-        data = channelType + b'\x01' + b'\x02\x03\x04\x05'[::-1]
+        data = b'\x01' + b'\x00\x0c'[::-1] 
+        data += channelType + b'\x01' + b'\x7C\x9E\x93\x6D'[::-1]
         #                               not used during zone load?
-        self.sendZlibPacket3(pktType, data)
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket3(pktType, data)
 
-        data = channelType + b'\x05' + b'\x00'*4 + b'\x00'*4
-        self.sendZlibPacket3(pktType, data)
+        data = b'\x01' + b'\x00\x0c'[::-1]
+        data += channelType + b'\x05'
+        data += b'\x7c\x9e\x93\x6d'[::-1] + b'\x00\x00\x00\x01'[::-1]
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket3(pktType, data)
 
 
     def pathManagerBudget(self):
-        pktType = b'\x1a'
+        pktType = b'\x02' #1a'
         channelType = b'\x07'
-        data = channelType + b'\x0d'
+        data = b'\x01' + b'\x00\x0c'[::-1]
+        data += channelType + b'\x0d'
         data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
         data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
         data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
@@ -214,22 +258,26 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00\x07'[::-1]                   # perPath
 
         data += b'\x06'                             # end loop
-        self.sendZlibPacket3(pktType, data)
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket3(pktType, data)
 
 
     def connectClientEntityManager(self):
-        pktType = b'\x1a'
+        pktType = b'\x02'
         channelType = b'\x07'
-        data = channelType + b'\x46'
-        self.sendZlibPacket3(pktType, data)
+        data = b'\x01' + b'\x00\x0c'[::-1]
+        data += channelType + b'\x46'
+        self.sendPacket(pktType, data)
+        # sendZlibPacket3
 
 
     # valid zoneToLoad: Town, pvp_start
     # Spawnpoints(?): Start, Waypoint, Respawn
     def loadZone(self, zoneToLoad):
-        pktType = b'\x1a'
+        pktType = b'\x02' #1a'
         channelType = b'\x0d'
-        data = channelType + b'\x00'
+        data = b'\x01' + b'\x00\x0c'[::-1]
+        data += channelType + b'\x00'
         data += zoneToLoad.encode('utf-8') + b'\x00'
         data += b'\x7C\x9E\x93\x6D'[::-1]
         data += b'\x01'                             # number of (something)
@@ -238,12 +286,13 @@ class GatewayServer(asyncio.Protocol):
         data += 'World'.encode('utf-8') + b'\x00'
 
         data += b'\x31\x96\x62\xBE'[::-1]           # BaseLoadingScreen
-        self.sendZlibPacket3(pktType, data)
+        self.sendPacket(pktType, data)
+        #self.sendZlibPacket3(pktType, data)
 
 
     def sendCharacter(self):
         pktType = b'\x02'
-        padding = b'\x66\x66\x66'
+        padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x04'
         data = padding + channelType + b'\x03'
         data += b'\x01'
