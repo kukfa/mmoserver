@@ -66,8 +66,8 @@ class GatewayServer(asyncio.Protocol):
                     time.sleep(1)
                     self.pathManagerBudget()
                     time.sleep(1)
-                    #self.testEntityCreate()
-                    #self.testPacket()
+                    self.testPacket()
+                    self.testEntityCreate()
                     time.sleep(1)
                     self.connectClientEntityManager()
                     #self.testPacket()
@@ -185,7 +185,7 @@ class GatewayServer(asyncio.Protocol):
         pktType = b'\x02'
         channelType = b'\x07'
         data = b'\x01' + b'\x00\x0c'[::-1]
-        data += channelType + b'\x14\x06'
+        data += channelType + b'\x0c' + b'\xFF'*4 + b'\x06'
         self.sendPacket(pktType, data)
 
 
@@ -210,22 +210,37 @@ class GatewayServer(asyncio.Protocol):
 
 
     def testEntityCreate(self):
-        pktType = b'\x1a'
+        pktType = b'\x02'
+        padding = b'\x01' + b'\x00\x0c'[::-1]
         channelType = b'\x07'
-        data = channelType + b'\x01'
+        data = padding + channelType + b'\x01'
 
-        data += b'\x00\x01'[::-1]
+        data += b'\x00\x01'[::-1]                       # entity ID?
         
-        data += b'\xFF'
-        data += 'Town'.encode('utf-8') + b'\x00'
+        data += b'\xFF'                         # GCClassRegistry::readType
+        data += 'Player'.encode('utf-8') + b'\x00'
 
         data += b'\x06'
-        self.sendZlibPacket3(pktType, data)
+        self.sendPacket(pktType, data)
 
-        data = channelType + b'\x02'
+        data = padding + channelType + b'\x02'
         data += b'\x00\x01'[::-1]
+
+        data += 'testPlayer'.encode('utf-8') + b'\x00'  # Player::readInit
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\xFF'
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x02\x03\x04\x05'[::-1]
+
+        data += b'\xFF'                         # GCClassRegistry::readType
+        data += 'Player'.encode('utf-8') + b'\x00'
+
+        data += 'anotherString'.encode('utf-8') + b'\x00'
+        data += b'\x02\x03\x04\x05'[::-1]
         data += b'\x06'
-        self.sendZlibPacket3(pktType, data)
+        self.sendPacket(pktType, data)
 
 
     def zoneClientInit(self):
@@ -295,7 +310,7 @@ class GatewayServer(asyncio.Protocol):
         padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x04'
         data = padding + channelType + b'\x03'
-        data += b'\x01'
+        data += b'\x01'                             # num chars being sent
         data += b'\x02\x03\x04\x05'                 # character ID
         data += b'\x2D'                             # version number
 
@@ -306,8 +321,8 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x00'*4
 
-        data += 'test111'.encode('utf-8') + b'\x00'
-        data += 'test222'.encode('utf-8') + b'\x00'
+        data += 'test1234'.encode('utf-8') + b'\x00'
+        data += 'test4321'.encode('utf-8') + b'\x00'
 
         data += b'\x00'*4
         data += b'\x00'*4
@@ -384,8 +399,15 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x00'*4
 
-        data += b'\xAA'
-        data += b'\x00'*4
+        data += b'\xAA'                             # not used?
+
+        data += b'\x00'
+        data += 'Normal'.encode('utf-8') + b'\x00'  # difficulty
+                            # (Normal, Formidable, Extreme and Insane)
+        data += b'\x00'
+        data += b'\x00'
+
+        data += b'\x00'*4                           # not used?
         self.sendPacket(pktType, data)
 
 
