@@ -57,11 +57,13 @@ class GatewayServer(asyncio.Protocol):
             if (pktType == 9):
                 if (secondByte == 0):
                     self.connectGroupClient()
+                    #self.testPacket()
                     self.addUserGroupClient()
-                    self.loadZone('Town')
+                    #self.loadZone('Town')
 
             if (pktType == 13):
                 if (secondByte == 6):
+                    """
                     self.zoneClientInit()
                     time.sleep(1)
                     self.pathManagerBudget()
@@ -71,7 +73,7 @@ class GatewayServer(asyncio.Protocol):
                     time.sleep(1)
                     self.connectClientEntityManager()
                     #self.testPacket()
-
+                    """
             else:
                 pass
         else:
@@ -118,6 +120,7 @@ class GatewayServer(asyncio.Protocol):
         packet += struct.pack("<I", len(data))
         packet += data
         print("[S] Data: " + packet.hex())
+        print("Decompressed: " + data[3:].hex())
         self.transport.write(packet)
 
 
@@ -176,16 +179,17 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x02\x03\x04\x05'[::-1]
         data += 'testchar'.encode('utf-8') + b'\x00'
-        data += b'\x00'*4
+        data += b'\x02\x03\x04\x05'[::-1]
         data += b'\x00'
         self.sendPacket(pktType, data)
 
 
     def testPacket(self):
         pktType = b'\x02'
-        channelType = b'\x07'
-        data = b'\x01' + b'\x00\x0c'[::-1]
-        data += channelType + b'\x0c' + b'\xFF'*4 + b'\x06'
+        channelType = b'\x06'
+        data = b'\x01' + b'\x00\x32'[::-1]
+        data += channelType + b'\x03'
+        data += b'\x00'
         self.sendPacket(pktType, data)
 
 
@@ -254,7 +258,8 @@ class GatewayServer(asyncio.Protocol):
 
         data = b'\x01' + b'\x00\x0c'[::-1]
         data += channelType + b'\x05'
-        data += b'\x7c\x9e\x93\x6d'[::-1] + b'\x00\x00\x00\x01'[::-1]
+        data += b'\xFF\xFF\xFF\xFF'[::-1] + b'\x10\x20\x30\x40'[::-1]
+        #                                   not used during zone load?
         self.sendPacket(pktType, data)
         #self.sendZlibPacket3(pktType, data)
 
@@ -294,13 +299,14 @@ class GatewayServer(asyncio.Protocol):
         data = b'\x01' + b'\x00\x0c'[::-1]
         data += channelType + b'\x00'
         data += zoneToLoad.encode('utf-8') + b'\x00'
-        data += b'\x7C\x9E\x93\x6D'[::-1]
-        data += b'\x01'                             # number of (something)
+        #data += b'\x7C\x9E\x93\x6D'[::-1]
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x00'                             # number of (something)
 
-        data += b'\xFF'
-        data += 'World'.encode('utf-8') + b'\x00'
+#        data += b'\xFF'
+#        data += 'ZoneDef'.encode('utf-8') + b'\x00'
 
-        data += b'\x31\x96\x62\xBE'[::-1]           # BaseLoadingScreen
+        data += b'\x02\x03\x04\x05'[::-1]           # BaseLoadingScreen
         self.sendPacket(pktType, data)
         #self.sendZlibPacket3(pktType, data)
 
@@ -315,22 +321,27 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x2D'                             # version number
 
         data += b'\x14\xfa\x62\x92'[::-1]           # native class -> Player
-        data += b'\x00'*9
+        data += b'\x14\xfa\x62\x92'[::-1]
+        data += 'test haaaa'.encode('utf-8') + b'\x00'
+        data += b'\x00'*4                           # number of nodes to read
         data += b'\x14\xfa\x62\x92'[::-1]           # GCObject -> Player
 
-
+        data += b'\x7c\x9b\x0c\x46'[::-1]           # Property -> Name
+        data += 'plzwork'.encode('utf-8') + b'\x00'
         data += b'\x00'*4
 
         data += 'test1234'.encode('utf-8') + b'\x00'
         data += 'test4321'.encode('utf-8') + b'\x00'
 
-        data += b'\x00'*4
-        data += b'\x00'*4
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x02\x03\x04\x05'[::-1]
 
         data += b'\x2d'
         data += b'\xf2\xb1\xe0\x64'[::-1]           # native class -> Avatar
+        data += b'\xf2\xb1\xe0\x64'[::-1]
+        data += 'test fuuuu'.encode('utf-8') + b'\x00'
 
-        data += b'\x00'*5
+        #data += b'\x00'*5
         data += b'\x00\x00\x00\x06'[::-1]           # number of nodes to read
 
         data += b'\x2d'
@@ -404,10 +415,10 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00'
         data += 'Normal'.encode('utf-8') + b'\x00'  # difficulty
                             # (Normal, Formidable, Extreme and Insane)
-        data += b'\x00'
+        data += b'\x02'
         data += b'\x00'
 
-        data += b'\x00'*4                           # not used?
+        data += b'\x02\x03\x04\x05'[::-1]                           # not used?
         self.sendPacket(pktType, data)
 
 
@@ -452,4 +463,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
