@@ -328,6 +328,7 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x7c\x9b\x0c\x46'[::-1]           # Property -> Name
         data += 'plzwork'.encode('utf-8') + b'\x00'
+
         data += b'\x00'*4
 
         data += 'test1234'.encode('utf-8') + b'\x00'
@@ -407,6 +408,42 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\xc3\x4e\x12\xc3'[::-1]           # Property -> HasBlingGnome
         data += b'\x00'*4
+
+        data += b'\x0f\xda\xbc\x3d'[::-1]           # Property -> Level
+        data += b'\x00\x00\x00\x64'[::-1]
+
+        data += b'\x1a\x64\x28\x47'[::-1]           # Property -> HitPoints
+        data += b'\x00\x03\xd0\x90'[::-1]
+
+        data += b'\xcd\xc4\xd6\xff'[::-1]           # Property -> ManaPoints
+        data += b'\x00\x03\xd0\x90'[::-1]
+
+        data += b'\x35\x46\x9c\x4d'[::-1]           # Property -> Experience
+        data += b'\x00\x03\xD0\x90'[::-1]
+
+        data += b'\x09\x95\xa0\x76'[::-1]           # Property -> AttributePoints
+        data += b'\x00\x00\x00\x64'[::-1]
+
+        data += b'\xe5\xa8\xe0\x88'[::-1]           # Property -> ReSpecTimer
+        data += b'\x00\x00\x00\x00'[::-1]
+
+        data += b'\x06\xb2\x18\xd1'[::-1]           # Property -> StrengthPoints
+        data += b'\x00\x00\x00\x64'[::-1]
+
+        data += b'\xdd\xdf\x76\xb5'[::-1]           # Property -> AgilityPoints
+        data += b'\x00\x00\x00\x64'[::-1]
+
+        data += b'\xe1\x54\x31\xe2'[::-1]           # Property -> ToughnessPoints
+        data += b'\x00\x00\x00\x64'[::-1]
+
+        data += b'\xb5\x24\x71\x4f'[::-1]           # Property -> PowerPoints
+        data += b'\x00\x00\x00\x64'[::-1]
+
+        data += b'\x0f\x8f\x06\x9d'[::-1]           # Property -> MaxTotalAttributePool
+        data += b'\x00\x00\x00\x64'[::-1]
+
+        data += b'\x8d\x69\x79\x00'[::-1]           # Property -> PVPRating
+        data += b'\x00\x00\x05\x39'[::-1]
 
         data += b'\x00'*4
 
