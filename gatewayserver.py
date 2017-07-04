@@ -321,9 +321,18 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x2D'                             # version number
 
         data += b'\x14\xfa\x62\x92'[::-1]           # native class -> Player
-        data += b'\x14\xfa\x62\x92'[::-1]
-        data += 'test haaaa'.encode('utf-8') + b'\x00'
-        data += b'\x00'*4                           # number of nodes to read
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += 'plzwork'.encode('utf-8') + b'\x00'
+        data += b'\x00\x00\x00\x01'[::-1]           # number of nodes to read
+
+        
+        data += b'\x2d'
+        data += b'\xa3\x19\x1a\x29'[::-1]           # StockUnit
+        data += b'\x00'*9
+        data += b'\xa3\x19\x1a\x29'[::-1]
+        data += b'\x00'*4
+        
+
         data += b'\x14\xfa\x62\x92'[::-1]           # GCObject -> Player
 
         data += b'\x7c\x9b\x0c\x46'[::-1]           # Property -> Name
@@ -331,16 +340,16 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x00'*4
 
-        data += 'test1234'.encode('utf-8') + b'\x00'
-        data += 'test4321'.encode('utf-8') + b'\x00'
+        data += 'plzwork'.encode('utf-8') + b'\x00'
+        data += 'plzwork'.encode('utf-8') + b'\x00'
 
         data += b'\x02\x03\x04\x05'[::-1]
         data += b'\x02\x03\x04\x05'[::-1]
 
         data += b'\x2d'
         data += b'\xf2\xb1\xe0\x64'[::-1]           # native class -> Avatar
-        data += b'\xf2\xb1\xe0\x64'[::-1]
-        data += 'test fuuuu'.encode('utf-8') + b'\x00'
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += 'plzwork'.encode('utf-8') + b'\x00'
 
         #data += b'\x00'*5
         data += b'\x00\x00\x00\x06'[::-1]           # number of nodes to read
@@ -353,8 +362,22 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x2d'
         data += b'\xca\x2b\xc0\xc4'[::-1]           # Node -> Manipulators
+        data += b'\x00'*5
+        data += b'\x00\x00\x00\x02'[::-1]
+        
+        data += b'\x2d'
+        data += b'\x22\x31\x81\x97'[::-1]           # Meleeweapon
         data += b'\x00'*9
-        data += b'\xca\x2b\xc0\xc4'[::-1]
+        data += b'\x09\x98\xf8\xf4'[::-1]           # items.pal.1HMacePAL.Normal001
+        data += b'\x00'*4
+
+        data += b'\x2d'
+        data += b'\x0f\x1a\xaa\xa6'[::-1]
+        data += b'\x00'*9
+        data += b'\x0e\xb0\xa7\xc2'[::-1]
+        data += b'\x00'*4
+
+        data += b'\xca\x2b\xc0\xc4'[::-1]           # gcobject -> Manipulators
         data += b'\x00'*4
         
         data += b'\x2d'
@@ -371,8 +394,52 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x2d'
         data += b'\x5b\xb7\xbf\x9d'[::-1]           # Node -> Equipment
+        data += b'\x00'*5
+        #data += b'\x00\x00\x00\x01'[::-1]
+        data += b'\x00'*4
+        """
+        data += b'\x2d'
+        data += b'\x22\x31\x81\x97'[::-1]           # equip node -> MeleeWeapon
+        data += b'\x00'*5
+        data += b'\x00\x00\x00\x01'[::-1]
+
+        data += b'\x2d'
+        data += b'\xf5\x0f\x34\x43'[::-1]           # Weapon node -> ItemModifier
+        data += b'\x00'*5
+        data += b'\x00'*4
+        data += b'\xf5\x81\xdb\xdb'[::-1]           # items.modpal.LevelPrefixModPAL.Weapon01.Mod1
+        data += b'\x00'*4
+
+        data += b'\x09\x98\xf8\xf4'[::-1]           # equip node GCobject -> items.pal.1HMacePAL.Normal001
+        data += b'\x00\x59\x78\x32'[::-1]           # ID
+        data += b'\x00\x00\x00\x0a'[::-1]
+        data += b'\x0f\xda\xbc\x3d'[::-1]           # Level
+        data += b'\x00\x00\x00\x01'[::-1]
+        data += b'\x00'*4
+        
+        '''
+        data += b'\x2d'
+        data += b'\x0f\x1a\xaa\xa6'[::-1]           # equip node -> Armor
+        data += b'\x00'*5
+        data += b'\x00\x00\x00\x00'[::-1]
+
+        '''
+        data += b'\x2d'
+        data += b'\x7c\x98\x9e\x34'[::-1]           # Armor node -> Item
         data += b'\x00'*9
-        data += b'\xff\x4e\xcc\x33'[::-1]           # node GCObject -> avatar.base.Equipment
+        data += b'\xd8\xf2\x20\x8f'[::-1]           # Armor node GCobject -> BaseBoots
+        data += b'\x00'*4
+        '''
+        data += b'\xd8\xf2\x20\x8e'[::-1]           # equip node GCobject -> ScaleBoots1Pal.ScaleBoots1-1 (arbitrary?
+        data += b'\x00\x59\x78\x32'[::-1]           # Property -> ID
+        data += b'\x00\x00\x00\x07'[::-1]
+        data += b'\x0f\xda\xbc\x3d'[::-1]           # Property -> Level
+        data += b'\x00\x00\x00\x01'[::-1]
+        data += b'\x00'*4
+        '''
+        """
+        data += b'\x5b\xb7\xbf\x9d'[::-1]           # Equipment
+        #data += b'\xff\x4e\xcc\x33'[::-1]           # node GCObject -> avatar.base.Equipment
         data += b'\x00'*4
 
         data += b'\x2d'
@@ -456,19 +523,6 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00'
 
         data += b'\x02\x03\x04\x05'[::-1]                           # not used?
-        self.sendPacket(pktType, data)
-
-
-    # used to trigger client-side hashing function
-    def clientHash(self):
-        pktType = b'\x02'
-        padding = b'\x66\x66\x66'
-        channelType = b'\x04'
-        data = padding + channelType + b'\x03'
-        data += b'\x01\x02\x03\x04\x05'
-        data += b'\x29'
-        hashName = 'CharacterName'
-        data += hashName.encode('utf-8') + b'\x00'
         self.sendPacket(pktType, data)
 
 
