@@ -2,6 +2,7 @@
 
 import asyncio
 import binascii
+from dfc import DFCObject
 import struct
 import time
 import zlib
@@ -318,211 +319,123 @@ class GatewayServer(asyncio.Protocol):
         data = padding + channelType + b'\x03'
         data += b'\x01'                             # num chars being sent
         data += b'\x02\x03\x04\x05'                 # character ID
-        data += b'\x2D'                             # version number
+        
+        player = DFCObject('Player', 33752069, 'plzwork', 'Player')
+        avatar = DFCObject('Avatar', None, None, 'avatar.classes.FighterMale')
+        
+        modifiers = DFCObject('Modifiers', None, None, 'Modifiers')
+        avatar.addNode(modifiers)
 
-        data += b'\x14\xfa\x62\x92'[::-1]           # native class -> Player
+        manipulators = DFCObject('Manipulators', None, None, 'Manipulators')
+        avatar.addNode(manipulators)
+
+        unitbehavior = DFCObject('UnitBehavior', None, None, 'avatar.base.UnitBehavior')
+        avatar.addNode(unitbehavior)
+
+        skills = DFCObject('Skills', None, None, 'avatar.base.skills')
+        avatar.addNode(skills)
+
+        equipment = DFCObject('Equipment', None, None, 'avatar.base.Equipment')
+        weapon = DFCObject('MeleeWeapon', None, None, 'items.pal.1HMacePAL.Normal001')
+        weapon.addProperty('ID', 10)
+        weapon.addProperty('Level', 1)
+        equipment.addNode(weapon)
+        avatar.addNode(equipment)
+
+        unitcontainer = DFCObject('UnitContainer', None, None, 'UnitContainer')
+        #avatar.addNode(unitcontainer)
+        # might be loading extra data -- revisit
+        
+        avatar.addProperty('Skin', 0)
+        avatar.addProperty('Face', 0)
+        avatar.addProperty('FaceFeature', 0)
+        avatar.addProperty('Hair', 0)
+        avatar.addProperty('HairColor', 0)
+        avatar.addProperty('TotalWorldTime', 10)
+        avatar.addProperty('LastKnownQueueLevel', 0)
+        avatar.addProperty('HasBlingGnome', 1)
+        avatar.addProperty('Level', 100)
+        avatar.addProperty('HitPoints', 1337)
+        avatar.addProperty('ManaPoints', 1337)
+        avatar.addProperty('Experience', 1337)
+        avatar.addProperty('AttributePoints', 100)
+        avatar.addProperty('ReSpecTimer', 0)
+        avatar.addProperty('StrengthPoints', 100)
+        avatar.addProperty('AgilityPoints', 100)
+        avatar.addProperty('ToughnessPoints', 100)
+        avatar.addProperty('PowerPoints', 100)
+        avatar.addProperty('MaxTotalAttributePool', 100)
+        avatar.addProperty('PVPRating', 1337)
+        
+        player.addNode(avatar)
+        player.addProperty('Name', 'plzwork')
+
+        data += player.serialize()
+
+        data += 'plzwork'.encode('utf-8') + b'\x00'
+        data += 'plzwork'.encode('utf-8') + b'\x00'
+
         data += b'\x02\x03\x04\x05'[::-1]
-        data += 'plzwork'.encode('utf-8') + b'\x00'
-        data += b'\x00\x00\x00\x01'[::-1]           # number of nodes to read
-
-        
-        data += b'\x2d'
-        data += b'\xa3\x19\x1a\x29'[::-1]           # StockUnit
-        data += b'\x00'*9
-        data += b'\xa3\x19\x1a\x29'[::-1]
-        data += b'\x00'*4
-        
-
-        data += b'\x14\xfa\x62\x92'[::-1]           # GCObject -> Player
-
-        data += b'\x7c\x9b\x0c\x46'[::-1]           # Property -> Name
-        data += 'plzwork'.encode('utf-8') + b'\x00'
-
-        data += b'\x00'*4
-
-        data += 'plzwork'.encode('utf-8') + b'\x00'
-        data += 'plzwork'.encode('utf-8') + b'\x00'
-
         data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
-
-        data += b'\x2d'
-        data += b'\xf2\xb1\xe0\x64'[::-1]           # native class -> Avatar
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += 'plzwork'.encode('utf-8') + b'\x00'
-
-        #data += b'\x00'*5
-        data += b'\x00\x00\x00\x06'[::-1]           # number of nodes to read
-
-        data += b'\x2d'
-        data += b'\x09\xc2\x6f\x07'[::-1]           # Node -> Modifiers
-        data += b'\x00'*9
-        data += b'\x09\xc2\x6f\x07'[::-1]
-        data += b'\x00'*4
-
-        data += b'\x2d'
-        data += b'\xca\x2b\xc0\xc4'[::-1]           # Node -> Manipulators
-        data += b'\x00'*5
-        data += b'\x00\x00\x00\x02'[::-1]
         
-        data += b'\x2d'
-        data += b'\x22\x31\x81\x97'[::-1]           # Meleeweapon
-        data += b'\x00'*9
-        data += b'\x09\x98\xf8\xf4'[::-1]           # items.pal.1HMacePAL.Normal001
+        avatarmetrics = DFCObject('AvatarMetrics', None, None, 'AvatarMetrics')
+        data += avatarmetrics.serialize()
+        # PlayTime
         data += b'\x00'*4
-
-        data += b'\x2d'
-        data += b'\x0f\x1a\xaa\xa6'[::-1]
-        data += b'\x00'*9
-        data += b'\x0e\xb0\xa7\xc2'[::-1]
         data += b'\x00'*4
-
-        data += b'\xca\x2b\xc0\xc4'[::-1]           # gcobject -> Manipulators
+        data += b'\x00'*4
+        data += b'\x00'*4
         data += b'\x00'*4
         
-        data += b'\x2d'
-        data += b'\x40\x0e\xd1\x75'[::-1]           # Node -> UnitBehavior
-        data += b'\x00'*9
-        data += b'\xD7\x2C\x9E\x4B'[::-1]           # node GCObject -> avatar.base.UnitBehavior
+        # ZoneToPlayTimeMap
         data += b'\x00'*4
-
-        data += b'\x2d'
-        data += b'\x1b\xeb\xf0\x97'[::-1]           # Node -> Skills
-        data += b'\x00'*9
-        data += b'\x81\xBE\x54\xED'[::-1]           # node GCObject ->avatar.base.Skills
-        data += b'\x00'*4
-
-        data += b'\x2d'
-        data += b'\x5b\xb7\xbf\x9d'[::-1]           # Node -> Equipment
-        data += b'\x00'*5
-        #data += b'\x00\x00\x00\x01'[::-1]
-        data += b'\x00'*4
-        """
-        data += b'\x2d'
-        data += b'\x22\x31\x81\x97'[::-1]           # equip node -> MeleeWeapon
-        data += b'\x00'*5
-        data += b'\x00\x00\x00\x01'[::-1]
-
-        data += b'\x2d'
-        data += b'\xf5\x0f\x34\x43'[::-1]           # Weapon node -> ItemModifier
-        data += b'\x00'*5
-        data += b'\x00'*4
-        data += b'\xf5\x81\xdb\xdb'[::-1]           # items.modpal.LevelPrefixModPAL.Weapon01.Mod1
-        data += b'\x00'*4
-
-        data += b'\x09\x98\xf8\xf4'[::-1]           # equip node GCobject -> items.pal.1HMacePAL.Normal001
-        data += b'\x00\x59\x78\x32'[::-1]           # ID
-        data += b'\x00\x00\x00\x0a'[::-1]
-        data += b'\x0f\xda\xbc\x3d'[::-1]           # Level
-        data += b'\x00\x00\x00\x01'[::-1]
-        data += b'\x00'*4
+        #data += 'test'.encode('utf-8') + b'\x00'
+        #data += b'\x00'
+        #data += b'\x00'*20
         
-        '''
-        data += b'\x2d'
-        data += b'\x0f\x1a\xaa\xa6'[::-1]           # equip node -> Armor
-        data += b'\x00'*5
-        data += b'\x00\x00\x00\x00'[::-1]
+        # LevelToPlayTimeMap
+        data += b'\x00'*4
+        #data += b'\x00'*4
+        #data += b'\x00'*20   # incomplete
 
-        '''
-        data += b'\x2d'
-        data += b'\x7c\x98\x9e\x34'[::-1]           # Armor node -> Item
-        data += b'\x00'*9
-        data += b'\xd8\xf2\x20\x8f'[::-1]           # Armor node GCobject -> BaseBoots
-        data += b'\x00'*4
-        '''
-        data += b'\xd8\xf2\x20\x8e'[::-1]           # equip node GCobject -> ScaleBoots1Pal.ScaleBoots1-1 (arbitrary?
-        data += b'\x00\x59\x78\x32'[::-1]           # Property -> ID
-        data += b'\x00\x00\x00\x07'[::-1]
-        data += b'\x0f\xda\xbc\x3d'[::-1]           # Property -> Level
-        data += b'\x00\x00\x00\x01'[::-1]
-        data += b'\x00'*4
-        '''
-        """
-        data += b'\x5b\xb7\xbf\x9d'[::-1]           # Equipment
-        #data += b'\xff\x4e\xcc\x33'[::-1]           # node GCObject -> avatar.base.Equipment
-        data += b'\x00'*4
+        # GoldStats
+        data += b'\x00'*8
+        data += b'\x00'*8
+        data += b'\x00'*8
+        data += b'\x00'*8
+        data += b'\x00'*8
 
-        data += b'\x2d'
-        data += b'\xe9\xab\x2a\x48'[::-1]           # Node -> UnitContainer
-        data += b'\x00'*9
-        data += b'\xe9\xab\x2a\x48'[::-1]
+        # LevelToGoldStatsMap
         data += b'\x00'*4
+        #data += b'\x00'*4
+        #data += b'\x00'*8
+        #data += b'\x00'*8
+        #data += b'\x00'*8
+        #data += b'\x00'*8
+        #data += b'\x00'*8
+        
+        # SkillUseMap
+        data += b'\x00'*4
+        #data += 'fuck'.encode('utf-8') + b'\x00'
+        #data += b'\x00'*4
+
+        # DeathMap
+        data += b'\x00'*4
+        #data += 'test2'.encode('utf-8') + b'\x00'
+        #data += b'\x00'*4
+
+        # SkillUseMap
+        data += b'\x00'*4
+        #data += 'fuck'.encode('utf-8') + b'\x00'
+        #data += b'\x00'*4
 
         data += b'\x00'
-
-        data += b'\x74\xf0\x57\xd6'[::-1]           # GCObject -> FighterMale
-
-        data += b'\x7C\x9D\xF4\x3a'[::-1]           # Property -> Skin
-        data += b'\x00'*4
-
-        data += b'\x7C\x96\xa7\xf4'[::-1]           # Property -> Face
-        data += b'\x00'*4
-
-        data += b'\x76\xdd\xcf\x80'[::-1]           # Property -> FaceFeature
-        data += b'\x00'*4
-
-        data += b'\x7c\x97\xc1\x89'[::-1]           # Property -> Hair
-        data += b'\x00'*4
-
-        data += b'\x6d\x69\x51\x48'[::-1]           # Property -> HairColor
-        data += b'\x00'*4
-
-        data += b'\x9b\xa4\x6f\x80'[::-1]           # Property -> TotalWorldTime
-        data += b'\x01'*4
-
-        data += b'\x11\x01\xe4\xa3'[::-1]           # Property -> LastKnownQueueLevel
-        data += b'\x01'*4
-
-        data += b'\xc3\x4e\x12\xc3'[::-1]           # Property -> HasBlingGnome
-        data += b'\x00'*4
-
-        data += b'\x0f\xda\xbc\x3d'[::-1]           # Property -> Level
-        data += b'\x00\x00\x00\x64'[::-1]
-
-        data += b'\x1a\x64\x28\x47'[::-1]           # Property -> HitPoints
-        data += b'\x00\x03\xd0\x90'[::-1]
-
-        data += b'\xcd\xc4\xd6\xff'[::-1]           # Property -> ManaPoints
-        data += b'\x00\x03\xd0\x90'[::-1]
-
-        data += b'\x35\x46\x9c\x4d'[::-1]           # Property -> Experience
-        data += b'\x00\x03\xD0\x90'[::-1]
-
-        data += b'\x09\x95\xa0\x76'[::-1]           # Property -> AttributePoints
-        data += b'\x00\x00\x00\x64'[::-1]
-
-        data += b'\xe5\xa8\xe0\x88'[::-1]           # Property -> ReSpecTimer
-        data += b'\x00\x00\x00\x00'[::-1]
-
-        data += b'\x06\xb2\x18\xd1'[::-1]           # Property -> StrengthPoints
-        data += b'\x00\x00\x00\x64'[::-1]
-
-        data += b'\xdd\xdf\x76\xb5'[::-1]           # Property -> AgilityPoints
-        data += b'\x00\x00\x00\x64'[::-1]
-
-        data += b'\xe1\x54\x31\xe2'[::-1]           # Property -> ToughnessPoints
-        data += b'\x00\x00\x00\x64'[::-1]
-
-        data += b'\xb5\x24\x71\x4f'[::-1]           # Property -> PowerPoints
-        data += b'\x00\x00\x00\x64'[::-1]
-
-        data += b'\x0f\x8f\x06\x9d'[::-1]           # Property -> MaxTotalAttributePool
-        data += b'\x00\x00\x00\x64'[::-1]
-
-        data += b'\x8d\x69\x79\x00'[::-1]           # Property -> PVPRating
-        data += b'\x00\x00\x05\x39'[::-1]
-
-        data += b'\x00'*4
-
         data += b'\xAA'                             # not used?
-
         data += b'\x00'
-        data += 'Normal'.encode('utf-8') + b'\x00'  # difficulty
-                            # (Normal, Formidable, Extreme and Insane)
+        data += 'Normal'.encode('utf-8') + b'\x00'  # difficulty (Normal, Formidable, Extreme and Insane)
         data += b'\x02'
         data += b'\x00'
-
-        data += b'\x02\x03\x04\x05'[::-1]                           # not used?
+        data += b'\x02\x03\x04\x05'[::-1]    # not used?
         self.sendPacket(pktType, data)
 
 
@@ -554,3 +467,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
