@@ -379,34 +379,25 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x02\x03\x04\x05'[::-1]
         
         avatarmetrics = DFCObject('AvatarMetrics', None, None, 'AvatarMetrics')
-        data += avatarmetrics.serialize()
         # PlayTime
-        data += b'\x00'*4
-        data += b'\x00'*4
-        data += b'\x00'*4
-        data += b'\x00'*4
-        data += b'\x00'*4
+        extraData = (b'\x00'*4 + b'\x00'*4 + b'\x00'*4 + b'\x00'*4 + b'\x00'*4)
         
         # ZoneToPlayTimeMap
-        data += b'\x00'*4
+        extraData += b'\x00'*4
         #data += 'test'.encode('utf-8') + b'\x00'
         #data += b'\x00'
         #data += b'\x00'*20
         
         # LevelToPlayTimeMap
-        data += b'\x00'*4
+        extraData += b'\x00'*4
         #data += b'\x00'*4
         #data += b'\x00'*20   # incomplete
 
         # GoldStats
-        data += b'\x00'*8
-        data += b'\x00'*8
-        data += b'\x00'*8
-        data += b'\x00'*8
-        data += b'\x00'*8
+        extraData += (b'\x00'*8 + b'\x00'*8 + b'\x00'*8 + b'\x00'*8 + b'\x00'*8)
 
         # LevelToGoldStatsMap
-        data += b'\x00'*4
+        extraData += b'\x00'*4
         #data += b'\x00'*4
         #data += b'\x00'*8
         #data += b'\x00'*8
@@ -415,19 +406,22 @@ class GatewayServer(asyncio.Protocol):
         #data += b'\x00'*8
         
         # SkillUseMap
-        data += b'\x00'*4
+        extraData += b'\x00'*4
         #data += 'fuck'.encode('utf-8') + b'\x00'
         #data += b'\x00'*4
 
         # DeathMap
-        data += b'\x00'*4
+        extraData += b'\x00'*4
         #data += 'test2'.encode('utf-8') + b'\x00'
         #data += b'\x00'*4
 
         # SkillUseMap
-        data += b'\x00'*4
+        extraData += b'\x00'*4
         #data += 'fuck'.encode('utf-8') + b'\x00'
         #data += b'\x00'*4
+
+        avatarmetrics.addExtraData(extraData)
+        data += avatarmetrics.serialize()
 
         data += b'\x00'
         data += b'\xAA'                             # not used?

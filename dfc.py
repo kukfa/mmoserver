@@ -8,6 +8,7 @@ class DFCObject:
         self.nodes = []
         self.GCClass = GCClass
         self.properties = {}
+        self.extraData = b''
 
     def hash_djb2(self, s):
         hash = 5381
@@ -20,6 +21,9 @@ class DFCObject:
 
     def addProperty(self, propertyName, propertyValue):
         self.properties[propertyName] = propertyValue
+
+    def addExtraData(self, extraData):
+        self.extraData += extraData
 
     def serialize(self):
         data = b'\x2D'                                  # version number
@@ -42,5 +46,6 @@ class DFCObject:
                 data += struct.pack("<I", value)
             else:                                       # string property
                 data += value.encode('utf-8') + b'\x00'
-        data += b'\x00'*4                               # end node
+        data += b'\x00'*4                               # end object
+        data += self.extraData                          # additional data
         return data
