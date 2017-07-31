@@ -50,8 +50,9 @@ class GatewayServer(asyncio.Protocol):
                 if (secondByte == 2):
                     pass
                 if (secondByte == 3):
+                    #self.connectClientEntityManager()
+                    #self.testEntityCreate()
                     self.sendCharacter()
-                    #self.clientHash()
                 if (secondByte == 5):
                     self.confirmCharSelection(decompressed[2:])
 
@@ -187,9 +188,9 @@ class GatewayServer(asyncio.Protocol):
 
     def testPacket(self):
         pktType = b'\x02'
-        channelType = b'\x06'
+        channelType = b'\x08'
         data = b'\x01' + b'\x00\x32'[::-1]
-        data += channelType + b'\x03'
+        data += channelType + b'\x00'
         data += b'\x00'
         self.sendPacket(pktType, data)
 
@@ -216,7 +217,7 @@ class GatewayServer(asyncio.Protocol):
 
     def testEntityCreate(self):
         pktType = b'\x02'
-        padding = b'\x01' + b'\x00\x0c'[::-1]
+        padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x07'
         data = padding + channelType + b'\x01'
 
@@ -286,7 +287,7 @@ class GatewayServer(asyncio.Protocol):
     def connectClientEntityManager(self):
         pktType = b'\x02'
         channelType = b'\x07'
-        data = b'\x01' + b'\x00\x0c'[::-1]
+        data = b'\x01' + b'\x00\x32'[::-1]
         data += channelType + b'\x46'
         self.sendPacket(pktType, data)
         # sendZlibPacket3
@@ -318,9 +319,9 @@ class GatewayServer(asyncio.Protocol):
         channelType = b'\x04'
         data = padding + channelType + b'\x03'
         data += b'\x01'                             # num chars being sent
-        data += b'\x02\x03\x04\x05'                 # character ID
+        data += b'\x02\x03\x04\x05'[::-1]           # character ID
         
-        player = DFCObject('Player', 33752069, 'plzwork', 'Player')
+        player = DFCObject('Player', None, None, 'Player')
         avatar = DFCObject('Avatar', None, None, 'avatar.classes.FighterMale')
         
         modifiers = DFCObject('Modifiers', None, None, 'Modifiers')
@@ -345,7 +346,52 @@ class GatewayServer(asyncio.Protocol):
         unitcontainer = DFCObject('UnitContainer', None, None, 'UnitContainer')
         #avatar.addNode(unitcontainer)
         # might be loading extra data -- revisit
-        
+
+        avatarmetrics = DFCObject('AvatarMetrics', None, None, 'AvatarMetrics')
+        # PlayTime
+        extraData = (b'\x00'*4 + b'\x00'*4 + b'\x00'*4 + b'\x00'*4 + b'\x00'*4)
+
+        # ZoneToPlayTimeMap
+        extraData += b'\x00'*4
+        #data += 'test'.encode('utf-8') + b'\x00'
+        #data += b'\x00'
+        #data += b'\x00'*20
+
+        # LevelToPlayTimeMap
+        extraData += b'\x00'*4
+        #data += b'\x00'*4
+        #data += b'\x00'*20   # incomplete
+
+        # GoldStats
+        extraData += (b'\x00'*8 + b'\x00'*8 + b'\x00'*8 + b'\x00'*8 + b'\x00'*8)
+
+        # LevelToGoldStatsMap
+        extraData += b'\x00'*4
+        #data += b'\x00'*4
+        #data += b'\x00'*8
+        #data += b'\x00'*8
+        #data += b'\x00'*8
+        #data += b'\x00'*8
+        #data += b'\x00'*8
+
+        # SkillUseMap
+        extraData += b'\x00'*4
+        #data += 'fuck'.encode('utf-8') + b'\x00'
+        #data += b'\x00'*4
+
+        # DeathMap
+        extraData += b'\x00'*4
+        #data += 'test2'.encode('utf-8') + b'\x00'
+        #data += b'\x00'*4
+
+        # SkillUseMap
+        extraData += b'\x00'*4
+        #data += 'fuck'.encode('utf-8') + b'\x00'
+        #data += b'\x00'*4
+
+        avatarmetrics.addExtraData(extraData)
+        avatar.addNode(avatarmetrics)
+
         avatar.addProperty('Skin', 0)
         avatar.addProperty('Face', 0)
         avatar.addProperty('FaceFeature', 0)
@@ -366,9 +412,12 @@ class GatewayServer(asyncio.Protocol):
         avatar.addProperty('PowerPoints', 100)
         avatar.addProperty('MaxTotalAttributePool', 100)
         avatar.addProperty('PVPRating', 1337)
-        
+
         player.addNode(avatar)
         player.addProperty('Name', 'plzwork')
+
+        test = DFCObject('StockUnit', None, None, 'skills.generic.DivineIntervention.DelayObject')
+        player.addNode(test)
 
         data += player.serialize()
 
@@ -377,51 +426,8 @@ class GatewayServer(asyncio.Protocol):
 
         data += b'\x02\x03\x04\x05'[::-1]
         data += b'\x02\x03\x04\x05'[::-1]
-        
-        avatarmetrics = DFCObject('AvatarMetrics', None, None, 'AvatarMetrics')
-        # PlayTime
-        extraData = (b'\x00'*4 + b'\x00'*4 + b'\x00'*4 + b'\x00'*4 + b'\x00'*4)
-        
-        # ZoneToPlayTimeMap
-        extraData += b'\x00'*4
-        #data += 'test'.encode('utf-8') + b'\x00'
-        #data += b'\x00'
-        #data += b'\x00'*20
-        
-        # LevelToPlayTimeMap
-        extraData += b'\x00'*4
-        #data += b'\x00'*4
-        #data += b'\x00'*20   # incomplete
 
-        # GoldStats
-        extraData += (b'\x00'*8 + b'\x00'*8 + b'\x00'*8 + b'\x00'*8 + b'\x00'*8)
-
-        # LevelToGoldStatsMap
-        extraData += b'\x00'*4
-        #data += b'\x00'*4
-        #data += b'\x00'*8
-        #data += b'\x00'*8
-        #data += b'\x00'*8
-        #data += b'\x00'*8
-        #data += b'\x00'*8
-        
-        # SkillUseMap
-        extraData += b'\x00'*4
-        #data += 'fuck'.encode('utf-8') + b'\x00'
-        #data += b'\x00'*4
-
-        # DeathMap
-        extraData += b'\x00'*4
-        #data += 'test2'.encode('utf-8') + b'\x00'
-        #data += b'\x00'*4
-
-        # SkillUseMap
-        extraData += b'\x00'*4
-        #data += 'fuck'.encode('utf-8') + b'\x00'
-        #data += b'\x00'*4
-
-        avatarmetrics.addExtraData(extraData)
-        data += avatarmetrics.serialize()
+        data += modifiers.serialize() #filler
 
         data += b'\x00'
         data += b'\xAA'                             # not used?
