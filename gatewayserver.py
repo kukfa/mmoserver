@@ -58,24 +58,23 @@ class GatewayServer(asyncio.Protocol):
 
             if (pktType == 9):
                 if (secondByte == 0):
+                    pass
                     self.connectGroupClient()
                     #self.testPacket()
-                    self.addUserGroupClient()
+                    #self.addUserGroupClient()
                     #self.loadZone('Town')
 
             if (pktType == 13):
                 if (secondByte == 6):
-                    """
                     self.zoneClientInit()
                     time.sleep(1)
                     self.pathManagerBudget()
                     time.sleep(1)
-                    self.testPacket()
-                    self.testEntityCreate()
+                    #self.testPacket()
+                    #self.testEntityCreate()
                     time.sleep(1)
                     self.connectClientEntityManager()
                     #self.testPacket()
-                    """
             else:
                 pass
         else:
@@ -180,7 +179,7 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00'*4
 
         data += b'\x02\x03\x04\x05'[::-1]
-        data += 'testchar'.encode('utf-8') + b'\x00'
+        data += 'plzwork'.encode('utf-8') + b'\x00'
         data += b'\x02\x03\x04\x05'[::-1]
         data += b'\x00'
         self.sendPacket(pktType, data)
@@ -188,10 +187,12 @@ class GatewayServer(asyncio.Protocol):
 
     def testPacket(self):
         pktType = b'\x02'
-        channelType = b'\x08'
+        channelType = b'\x09'
         data = b'\x01' + b'\x00\x32'[::-1]
-        data += channelType + b'\x00'
-        data += b'\x00'
+        data += channelType + b'\x44'
+        data += b'\x00'*4
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x01'
         self.sendPacket(pktType, data)
 
 
@@ -287,7 +288,7 @@ class GatewayServer(asyncio.Protocol):
     def connectClientEntityManager(self):
         pktType = b'\x02'
         channelType = b'\x07'
-        data = b'\x01' + b'\x00\x32'[::-1]
+        data = b'\x01' + b'\x00\x0c'[::-1]
         data += channelType + b'\x46'
         self.sendPacket(pktType, data)
         # sendZlibPacket3
@@ -322,8 +323,10 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x02\x03\x04\x05'[::-1]           # character ID
         
         player = DFCObject('Player', None, None, 'Player')
+
+        # build avatar
         avatar = DFCObject('Avatar', None, None, 'avatar.classes.FighterMale')
-        
+
         modifiers = DFCObject('Modifiers', None, None, 'Modifiers')
         avatar.addNode(modifiers)
 
@@ -344,7 +347,9 @@ class GatewayServer(asyncio.Protocol):
         avatar.addNode(equipment)
 
         unitcontainer = DFCObject('UnitContainer', None, None, 'UnitContainer')
-        #avatar.addNode(unitcontainer)
+        extraData = weapon.serialize()
+        unitcontainer.addExtraData(extraData)
+        avatar.addNode(unitcontainer)
         # might be loading extra data -- revisit
 
         avatarmetrics = DFCObject('AvatarMetrics', None, None, 'AvatarMetrics')
@@ -416,26 +421,36 @@ class GatewayServer(asyncio.Protocol):
         player.addNode(avatar)
         player.addProperty('Name', 'plzwork')
 
-        test = DFCObject('StockUnit', None, None, 'skills.generic.DivineIntervention.DelayObject')
-        player.addNode(test)
+        #test = DFCObject('StockUnit', None, None, 'skills.generic.DivineIntervention.DelayObject')
+        #player.addNode(test)
+
+        extraData = 'plzwork1'.encode('utf-8') + b'\x00'
+        extraData += 'plzwork2'.encode('utf-8') + b'\x00'
+
+        extraData += b'\x02\x03\x04\x05'[::-1]           # not used?
+        extraData += b'\x02\x03\x04\x05'[::-1]           # not used?
+
+        test2 = DFCObject('WorldEntity', None, None, 'WorldEntity')
+        extraData += test2.serialize() #filler
+
+        extraData += b'\x00'                             # changed queue levels
+        extraData += b'\xAA'                             # not used?
+        #data += b'\x00'
+        extraData += 'Normal'.encode('utf-8') + b'\x00'  # difficulty (Normal, Formidable, Extreme and Insane)
+        extraData += b'\x02'                             # not used? 
+        extraData += b'\x00'                             # not used?
+        extraData += b'\x02\x03\x04\x05'[::-1]    # not used?
+        player.addExtraData(extraData)
+
+        worldtest = DFCObject('WorldEntity', None, None, 'WorldEntity')
+        worldtest.addNode(player)
+        #data += worldtest.serialize()
+
+        vehicle = DFCObject('Vehicle', None, None, 'Vehicle')
+        avatar.addNode(vehicle)
 
         data += player.serialize()
 
-        data += 'plzwork'.encode('utf-8') + b'\x00'
-        data += 'plzwork'.encode('utf-8') + b'\x00'
-
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
-
-        data += modifiers.serialize() #filler
-
-        data += b'\x00'
-        data += b'\xAA'                             # not used?
-        data += b'\x00'
-        data += 'Normal'.encode('utf-8') + b'\x00'  # difficulty (Normal, Formidable, Extreme and Insane)
-        data += b'\x02'
-        data += b'\x00'
-        data += b'\x02\x03\x04\x05'[::-1]    # not used?
         self.sendPacket(pktType, data)
 
 
