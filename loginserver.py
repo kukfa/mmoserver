@@ -14,7 +14,7 @@ numServers = 1
 ageLimit = 10
 
 serverID = 1
-gameIP = "10.0.0.1"
+gameIP = "10.0.2.4"
 gamePort = 7777
 maxPlayers = 20
 numPlayers = 0

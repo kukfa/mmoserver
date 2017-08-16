@@ -59,7 +59,7 @@ class GatewayServer(asyncio.Protocol):
             if (pktType == 9):
                 if (secondByte == 0):
                     pass
-                    self.connectGroupClient()
+                    #self.connectGroupClient()
                     #self.testPacket()
                     #self.addUserGroupClient()
                     #self.loadZone('Town')
@@ -347,10 +347,31 @@ class GatewayServer(asyncio.Protocol):
         avatar.addNode(equipment)
 
         unitcontainer = DFCObject('UnitContainer', None, None, 'UnitContainer')
-        extraData = weapon.serialize()
+        
+        inventory = DFCObject('Inventory', None, None, 'avatar.base.Inventory')
+        unitcontainer.addNode(inventory)
+
+        tradeinventory = DFCObject('Inventory', None, None, 'avatar.base.TradeInventory')
+        unitcontainer.addNode(tradeinventory)
+
+        bank1 = DFCObject('Inventory', None, None, 'avatar.base.Bank')
+        unitcontainer.addNode(bank1)
+
+        bank2 = DFCObject('Inventory', None, None, 'avatar.base.Bank2')
+        unitcontainer.addNode(bank2)
+
+        bank3 = DFCObject('Inventory', None, None, 'avatar.base.Bank3')
+        unitcontainer.addNode(bank3)
+
+        bank4 = DFCObject('Inventory', None, None, 'avatar.base.Bank4')
+        unitcontainer.addNode(bank4)
+
+        bank5 = DFCObject('Inventory', None, None, 'avatar.base.Bank5')
+        unitcontainer.addNode(bank5)
+
+        extraData = weapon.serialize()      # filler
         unitcontainer.addExtraData(extraData)
         avatar.addNode(unitcontainer)
-        # might be loading extra data -- revisit
 
         avatarmetrics = DFCObject('AvatarMetrics', None, None, 'AvatarMetrics')
         # PlayTime
@@ -446,8 +467,11 @@ class GatewayServer(asyncio.Protocol):
         worldtest.addNode(player)
         #data += worldtest.serialize()
 
-        vehicle = DFCObject('Vehicle', None, None, 'Vehicle')
-        avatar.addNode(vehicle)
+        #vehicle = DFCObject('Vehicle', None, None, 'Vehicle')
+        #avatar.addNode(vehicle)
+
+        procmod = DFCObject('ProcModifier', None, None, 'ProcModifier')
+        player.addNode(procmod)
 
         data += player.serialize()
 
