@@ -16,6 +16,7 @@ class GatewayServer(asyncio.Protocol):
         self.client = (transport.get_extra_info('peername')[0] + ":"    # IP
             + str(transport.get_extra_info('peername')[1]))             # port
         print("Connection from: " + self.client)
+        self.msgSource = b'\x01' + b'\x00\x03'[::-1]
 
 
     def connection_lost(self, exc):
@@ -35,6 +36,7 @@ class GatewayServer(asyncio.Protocol):
             secondByte = int(decompressed[1])
 
             if (pktType == 1):
+                self.sessionKey = decompressed[1:5]
                 self.initPacket()
 
             if (pktType == 3):
@@ -42,7 +44,7 @@ class GatewayServer(asyncio.Protocol):
                     self.connectUserManagerClient()
                 if (secondByte == 1):
                     self.rosterUserManagerClient()
-                    self.connectCharacterManagerClient()
+                    #self.connectCharacterManagerClient()
 
             if (pktType == 4):
                 if (secondByte == 0):
@@ -59,9 +61,9 @@ class GatewayServer(asyncio.Protocol):
             if (pktType == 9):
                 if (secondByte == 0):
                     pass
-                    #self.connectGroupClient()
+                    self.connectGroupClient()
                     #self.testPacket()
-                    #self.addUserGroupClient()
+                    self.addUserGroupClient()
                     #self.loadZone('Town')
 
             if (pktType == 13):
@@ -117,7 +119,7 @@ class GatewayServer(asyncio.Protocol):
 
     def sendPacket(self, pktType, data):
         packet = pktType
-        packet += b'\x99\x88\x77'
+        packet += b'\x01\x32\x00'   # message address?
         packet += struct.pack("<I", len(data))
         packet += data
         print("[S] Data: " + packet.hex())
@@ -131,31 +133,32 @@ class GatewayServer(asyncio.Protocol):
 
 
     def initPacket(self):
+        # GatewayClient::UpdateAuthorize
         pktType = b'\x02' #08
-        padding = b'\x01' + b'\x00\x32'[::-1]
-        data = padding + b'\x03'#\xBA\xAD\xF0\x0D'
+        #padding = b'\x01' + b'\x00\x32'[::-1]
+        data = self.msgSource + b'\x03'#\xBA\xAD\xF0\x0D'
         self.sendPacket(pktType, data)
         #self.sendZlibPacket1(pktType, data)
 
-        pktType = b'\x02'
-        data = b'\x00' + b'\x03\x00'
-        data += b'\x01' + b'\x00\x32'[::-1]
+        # DFCMessageClient::processConnected
+        data = b'\x00' + b'\x03\x00'        # message address: source
+        data += b'\x01' + b'\x00\x32'[::-1] # message address: destination
         self.sendPacket(pktType, data)
 
 
     def connectCharacterManagerClient(self):
         pktType = b'\x02'
-        padding = b'\x01' + b'\x00\x32'[::-1]
+        #padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x04'
-        data = padding + channelType + b'\x00'
+        data = self.msgSource + channelType + b'\x00'
         self.sendPacket(pktType, data)
 
 
     def confirmCharSelection(self, charID):
         pktType = b'\x02'
-        padding = b'\x01' + b'\x00\x32'[::-1]
+        #padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x04'
-        data = padding + channelType + b'\x05'
+        data = self.msgSource + channelType + b'\x05'
         data += charID
         self.sendPacket(pktType, data)
 
@@ -198,19 +201,19 @@ class GatewayServer(asyncio.Protocol):
 
     def connectUserManagerClient(self):
         pktType = b'\x02'
-        padding = b'\x01' + b'\x00\x32'[::-1]
+        #padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x03'
-        data = padding + channelType + b'\x00'
-        data += 'testString'.encode('utf-8') + b'\x00'
+        data = self.msgSource + channelType + b'\x00'
+        data += 'plzwork'.encode('utf-8') + b'\x00'
         self.sendPacket(pktType, data)
 
 
     def rosterUserManagerClient(self):
         pktType = b'\x02'
-        padding = b'\x01' + b'\x00\x32'[::-1]
+        #padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x03'
-        data = padding + channelType + b'\x01'
-        data += b'\x01' + b'\x01'
+        data = self.msgSource + channelType + b'\x01'
+        data += b'\x00' + b'\x00'
         data += b'\x00'*4
         data += b'\x00'*4
         self.sendPacket(pktType, data)
@@ -304,30 +307,62 @@ class GatewayServer(asyncio.Protocol):
         data += zoneToLoad.encode('utf-8') + b'\x00'
         #data += b'\x7C\x9E\x93\x6D'[::-1]
         data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x00'                             # number of (something)
+        data += b'\x01'                             # number of (something)
 
-#        data += b'\xFF'
-#        data += 'ZoneDef'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
+        data += 'world.town.npc.Amazon1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Bank'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.base.TrainerFighterBase'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.base.TrainerMageBase'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.base.TrainerRangerBase'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Boy1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Girl1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Gnome1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.HelperNoobosaur01'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.OldMan1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.PosseMagnate'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.SnowMan1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TokenFI'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TokenJewelry'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TokenMA'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TokenRG'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownCommander'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownGuard1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownGuard2'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownGuard3'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownLieutenant'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TrainerFighter'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TrainerMage'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TrainerRanger'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.VendorPotion1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.VendorWeapon1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.VendorWeapon2'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.VendorWeapon3'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Well'.encode('utf-8') + b'\x00'
 
-        data += b'\x02\x03\x04\x05'[::-1]           # BaseLoadingScreen
+
+        data += b'\x00\x00\x00\x00'[::-1]           # BaseLoadingScreen
         self.sendPacket(pktType, data)
         #self.sendZlibPacket3(pktType, data)
 
 
     def sendCharacter(self):
         pktType = b'\x02'
-        padding = b'\x01' + b'\x00\x32'[::-1]
+        #TODO replace 'padding' name with 'source' throughout program
+        #padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x04'
-        data = padding + channelType + b'\x03'
+        data = self.msgSource + channelType + b'\x03'
         data += b'\x01'                             # num chars being sent
-        data += b'\x02\x03\x04\x05'[::-1]           # character ID
+        data += b'\x00\x0B\xC9\xEA'[::-1]           # character ID
         
-        player = DFCObject('Player', None, None, 'Player')
+        player = DFCObject('Player', 772586, 'Player { Name = "plzwork"; }', 'Player')
 
         # build avatar
-        avatar = DFCObject('Avatar', None, None, 'avatar.classes.FighterMale')
+        avatar = DFCObject('Avatar', 772587, 'Avatar { SizeMod = 3000; }', 'avatar.classes.FighterMale')
 
         modifiers = DFCObject('Modifiers', None, None, 'Modifiers')
+        zonespawn = DFCObject('AttributeModifier', None, None, 'avatar.base.ZoneSpawnInvulnerabilityModifier')
+        #modifiers.addNode(zonespawn)
         avatar.addNode(modifiers)
 
         manipulators = DFCObject('Manipulators', None, None, 'Manipulators')
@@ -463,7 +498,7 @@ class GatewayServer(asyncio.Protocol):
         extraData += b'\x02\x03\x04\x05'[::-1]    # not used?
         player.addExtraData(extraData)
 
-        worldtest = DFCObject('WorldEntity', None, None, 'WorldEntity')
+        worldtest = DFCObject('EntityObject', None, None, 'EntityObject')
         worldtest.addNode(player)
         #data += worldtest.serialize()
 

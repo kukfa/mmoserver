@@ -233,6 +233,7 @@ class LoginServer(asyncio.Protocol):
             # return "07"
         # if everything's valid
         sessionKey = os.urandom(8)
+        print("Session key #1: " + sessionKey.hex())
         # TODO associate key with account
         # TODO store that this account is currently logged in to login server
         return sessionKey
@@ -252,6 +253,7 @@ class LoginServer(asyncio.Protocol):
             # return "01"    # 'account in use'
         # if sessionKey not valid
             # return "03"    # 'invalid password'
+        print("Session key #2: " + sessionKey.hex())
         return sessionKey
 
 
