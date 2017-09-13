@@ -23,6 +23,11 @@ class GatewayServer(asyncio.Protocol):
     def connection_lost(self, exc):
         print("Connection closed: " + self.client)
 
+    
+    def closeSocket(self, reason):
+        print(reason)
+        self.transport.close()
+
 
     def data_received(self, data):
         # TODO check ADLER32 of zlib data
@@ -62,10 +67,10 @@ class GatewayServer(asyncio.Protocol):
             if (pktType == 9):
                 if (secondByte == 0):
                     pass
-                    #self.connectGroupClient()
-                    self.testPacket()
-                    #self.addUserGroupClient()
-                    #self.loadZone('Town')
+                    self.connectGroupClient()
+                    #self.testPacket()
+                    self.addUserGroupClient()
+                    self.loadZone('Town')
 
             if (pktType == 13):
                 if (secondByte == 6):
@@ -73,11 +78,10 @@ class GatewayServer(asyncio.Protocol):
                     time.sleep(1)
                     self.pathManagerBudget()
                     time.sleep(1)
-                    #self.testPacket()
-                    #self.testEntityCreate()
+                    self.testPacket()
+                    self.testEntityCreate()
                     time.sleep(1)
                     self.connectClientEntityManager()
-                    #self.testPacket()
             else:
                 pass
         else:
@@ -136,245 +140,45 @@ class GatewayServer(asyncio.Protocol):
         self.transport.write(packet)
 
 
-    def closeSocket(self, reason):
-        print(reason)
-        self.transport.close()
-
-
     def initPacket(self):
         # GatewayClient::UpdateAuthorize
-        pktType = b'\x0a' #08
-        #padding = b'\x01' + b'\x00\x32'[::-1]
-        data = b'\x03'#\xBA\xAD\xF0\x0D'
-        #self.sendPacket(pktType, data)
+        pktType = b'\x0a'
+        data = b'\x03'
         self.sendZlibPacket3(pktType, data)
 
         # DFCMessageClient::processConnected
-        data = b'\x01' + b'\x32\x00'        # message address: source
-        #data += b'\x00' + b'\x00\x32'[::-1] # message address: destination
-        #self.sendPacket(pktType, data)
+        data = b'\x01' + b'\x32\x00'
         self.sendZlibPacket3(pktType, data)
-
-
-    def connectCharacterManagerClient(self):
-        pktType = b'\x0e'
-        #padding = b'\x01' + b'\x00\x32'[::-1]
-        channelType = b'\x04'
-        #data = self.msgSource
-        data = channelType + b'\x00'
-        #self.sendPacket(pktType, data)
-        self.sendZlibPacket1(pktType, data)
-
-
-    def confirmCharSelection(self, charID):
-        pktType = b'\x0e'
-        #padding = b'\x01' + b'\x00\x32'[::-1]
-        channelType = b'\x04'
-        #data = self.msgSource
-        data = channelType + b'\x05'
-        data += charID
-        #self.sendPacket(pktType, data)
-        self.sendZlibPacket1(pktType, data)
-
-
-    def connectGroupClient(self):
-        pktType = b'\x0e'
-        channelType = b'\x09'
-        #data = b'\x01' + b'\x00\x32'[::-1]
-        #data = self.msgSource
-        data = channelType + b'\x30'
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x01'
-        data += b'\x01'
-        self.sendZlibPacket1(pktType, data)
-
-
-    def addUserGroupClient(self):
-        pktType = b'\x0e'
-        channelType = b'\x09'
-        #data = b'\x01' + b'\x00\x32'[::-1]
-        #data = self.msgSource
-        data = channelType + b'\x42'
-        data += b'\x00'*4
-
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += 'plzwork'.encode('utf-8') + b'\x00'
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x00'
-        self.sendZlibPacket1(pktType, data)
-
-
-    def testPacket(self):
-        pktType = b'\x0e'
-        channelType = b'\x09'
-        data = channelType + b'\x30'
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x01'
-        data += b'\x01'
-        self.sendZlibPacket1(pktType, data)
-
+        
 
     def connectUserManagerClient(self):
         pktType = b'\x0e'
-        #padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x03'
-        #data = self.msgSource
         data = channelType + b'\x00'
         data += 'plzwork'.encode('utf-8') + b'\x00'
-        #self.sendPacket(pktType, data)
         self.sendZlibPacket1(pktType, data)
 
 
     def rosterUserManagerClient(self):
         pktType = b'\x0e'
-        #padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x03'
-        #data = self.msgSource
         data = channelType + b'\x01'
         data += b'\x00' + b'\x00'
         data += b'\x00'*4
         data += b'\x00'*4
-        #self.sendPacket(pktType, data)
         self.sendZlibPacket1(pktType, data)
 
 
-    def testEntityCreate(self):
-        pktType = b'\x02'
-        padding = b'\x01' + b'\x00\x32'[::-1]
-        channelType = b'\x07'
-        data = padding + channelType + b'\x01'
-
-        data += b'\x00\x01'[::-1]                       # entity ID?
+    def connectCharacterManagerClient(self):
+        pktType = b'\x0e'
+        channelType = b'\x04'
+        data = channelType + b'\x00'
+        self.sendZlibPacket1(pktType, data)
         
-        data += b'\xFF'                         # GCClassRegistry::readType
-        data += 'Player'.encode('utf-8') + b'\x00'
-
-        data += b'\x06'
-        self.sendPacket(pktType, data)
-
-        data = padding + channelType + b'\x02'
-        data += b'\x00\x01'[::-1]
-
-        data += 'testPlayer'.encode('utf-8') + b'\x00'  # Player::readInit
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\xFF'
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
-
-        data += b'\xFF'                         # GCClassRegistry::readType
-        data += 'Player'.encode('utf-8') + b'\x00'
-
-        data += 'anotherString'.encode('utf-8') + b'\x00'
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x06'
-        self.sendPacket(pktType, data)
-
-
-    def zoneClientInit(self):
-        pktType = b'\x02' #1a'
-        channelType = b'\x0d'
-        #data = b'\x01' + b'\x00\x0c'[::-1] 
-        data = self.msgSource
-        data += channelType + b'\x01' + b'\x7C\x9E\x93\x6D'[::-1]
-        #                               not used during zone load?
-        self.sendPacket(pktType, data)
-        #self.sendZlibPacket3(pktType, data)
-
-        data = b'\x01' + b'\x00\x0c'[::-1]
-        data += channelType + b'\x05'
-        data += b'\xFF\xFF\xFF\xFF'[::-1] + b'\x10\x20\x30\x40'[::-1]
-        #                                   not used during zone load?
-        self.sendPacket(pktType, data)
-        #self.sendZlibPacket3(pktType, data)
-
-
-    def pathManagerBudget(self):
-        pktType = b'\x02' #1a'
-        channelType = b'\x07'
-        #data = b'\x01' + b'\x00\x0c'[::-1]
-        data = self.msgSource
-        data += channelType + b'\x0d'
-        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
-        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
-        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
-
-        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
-        data += b'\x00\x1e'[::-1]                   # perUpdate
-        data += b'\x00\x07'[::-1]                   # perPath
-
-        data += b'\x06'                             # end loop
-        self.sendPacket(pktType, data)
-        #self.sendZlibPacket3(pktType, data)
-
-
-    def connectClientEntityManager(self):
-        pktType = b'\x02'
-        channelType = b'\x07'
-        #data = b'\x01' + b'\x00\x0c'[::-1]
-        data = self.msgSource
-        data += channelType + b'\x46'
-        self.sendPacket(pktType, data)
-        # sendZlibPacket3
-
-
-    # valid zoneToLoad: Town, pvp_start
-    # Spawnpoints(?): Start, Waypoint, Respawn
-    def loadZone(self, zoneToLoad):
-        pktType = b'\x02' #1a'
-        channelType = b'\x0d'
-        #data = b'\x01' + b'\x00\x0c'[::-1]
-        data = self.msgSource
-        data += channelType + b'\x00'
-        data += zoneToLoad.encode('utf-8') + b'\x00'
-        #data += b'\x7C\x9E\x93\x6D'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x01'                             # number of (something)
-
-        data += b'\xFF'
-        data += 'world.town.npc.Amazon1'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.Bank'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.base.TrainerFighterBase'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.base.TrainerMageBase'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.base.TrainerRangerBase'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.Boy1'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.Girl1'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.Gnome1'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.HelperNoobosaur01'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.OldMan1'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.PosseMagnate'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.SnowMan1'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TokenFI'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TokenJewelry'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TokenMA'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TokenRG'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TownCommander'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TownGuard1'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TownGuard2'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TownGuard3'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TownLieutenant'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TrainerFighter'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TrainerMage'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.TrainerRanger'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.VendorPotion1'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.VendorWeapon1'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.VendorWeapon2'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.VendorWeapon3'.encode('utf-8') + b'\x00'
-        data += 'world.town.npc.Well'.encode('utf-8') + b'\x00'
-
-
-        data += b'\x00\x00\x00\x00'[::-1]           # BaseLoadingScreen
-        self.sendPacket(pktType, data)
-        #self.sendZlibPacket3(pktType, data)
-
-
+        
     def sendCharacter(self):
         pktType = b'\x0e'
-        #TODO replace 'padding' name with 'source' throughout program
-        #padding = b'\x01' + b'\x00\x32'[::-1]
         channelType = b'\x04'
-        #data = self.msgSource
         data = channelType + b'\x03'
         data += b'\x01'                             # num chars being sent
         data += b'\x02\x03\x04\x05'[::-1]           # character ID
@@ -536,14 +340,170 @@ class GatewayServer(asyncio.Protocol):
 
         #self.sendPacket(pktType, data)
         self.sendZlibPacket1(pktType, data)
-
-
+        
+        
     def charCreate(self):
-        pktType = b'\x02'
-        padding = b'\x66\x66\x66'
+        pktType = b'\x0e'
         channelType = b'\x04'
-        data = padding + channelType + b'\x04'
-        self.sendPacket(pktType, data)
+        data = channelType + b'\x04'
+        self.sendZlibPacket1(pktType, data)
+        
+        
+    def confirmCharSelection(self, charID):
+        pktType = b'\x0e'
+        channelType = b'\x04'
+        data = channelType + b'\x05'
+        data += charID
+        self.sendZlibPacket1(pktType, data)
+
+
+    def testEntityCreate(self):
+        pktType = b'\x0e'
+        channelType = b'\x07'
+        data = channelType + b'\x01'
+        data += b'\x00\x01'[::-1]                       # entity ID?
+        data += b'\xFF'                         # GCClassRegistry::readType
+        data += 'Player'.encode('utf-8') + b'\x00'
+        data += b'\x06'
+        self.sendZlibPacket1(pktType, data)
+
+        data = channelType + b'\x02'
+        data += b'\x00\x01'[::-1]
+        data += '{Name="plzwork"; World="Town";}'.encode('utf-8') + b'\x00'  # Player::readInit
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\xFF'
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\xFF'                         # GCClassRegistry::readType
+        data += 'Player'.encode('utf-8') + b'\x00'
+        data += '{Name="plzwork"; World="Town";}'.encode('utf-8') + b'\x00'
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x06'
+        self.sendZlibPacket1(pktType, data)
+
+        data = channelType + b'\x03'
+        data += b'\x00\x01'[::-1]
+        data += b'\x03'
+        data += b'\x00\x01'[::-1]
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x06'
+        self.sendZlibPacket1(pktType, data)
+  
+        
+    def testPacket(self):
+        pktType = b'\x0e'
+        channelType = b'\x07'
+        data = channelType + b'\x0c'
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x06'
+        self.sendZlibPacket1(pktType, data)
+        
+        
+    def pathManagerBudget(self):
+        pktType = b'\x0e'
+        channelType = b'\x07'
+        data = channelType + b'\x0d'
+        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
+        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
+        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
+
+        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
+        data += b'\x00\x1e'[::-1]                   # perUpdate
+        data += b'\x00\x07'[::-1]                   # perPath
+
+        data += b'\x06'                             # end loop
+        self.sendZlibPacket1(pktType, data)
+        
+
+    def connectClientEntityManager(self):
+        pktType = b'\x0e'
+        channelType = b'\x07'
+        data = channelType + b'\x46'
+        self.sendZlibPacket1(pktType, data)
+
+
+    # valid zoneToLoad: Town, pvp_start
+    # Spawnpoints(?): Start, Waypoint, Respawn
+    def loadZone(self, zoneToLoad):
+        pktType = b'\x0e'
+        channelType = b'\x0d'
+        data = channelType + b'\x00'
+        data += zoneToLoad.encode('utf-8') + b'\x00'
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x01'                             # number of (something)
+
+        data += b'\xFF'
+        data += 'world.town.npc.Amazon1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Bank'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.base.TrainerFighterBase'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.base.TrainerMageBase'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.base.TrainerRangerBase'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Boy1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Girl1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Gnome1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.HelperNoobosaur01'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.OldMan1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.PosseMagnate'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.SnowMan1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TokenFI'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TokenJewelry'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TokenMA'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TokenRG'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownCommander'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownGuard1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownGuard2'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownGuard3'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TownLieutenant'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TrainerFighter'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TrainerMage'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.TrainerRanger'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.VendorPotion1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.VendorWeapon1'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.VendorWeapon2'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.VendorWeapon3'.encode('utf-8') + b'\x00'
+        data += 'world.town.npc.Well'.encode('utf-8') + b'\x00'
+
+
+        data += b'\x00\x00\x00\x00'[::-1]           # BaseLoadingScreen
+        self.sendZlibPacket1(pktType, data)
+        
+
+    def zoneClientInit(self):
+        pktType = b'\x0e'
+        channelType = b'\x0d'
+        data = channelType + b'\x01' + b'\x7C\x9E\x93\x6D'[::-1]
+        #                               not used during zone load?
+        self.sendZlibPacket1(pktType, data)
+
+        data = channelType + b'\x05'
+        data += b'\xFF\xFF\xFF\xFF'[::-1] + b'\x10\x20\x30\x40'[::-1]
+        #                                   not used during zone load?
+        self.sendZlibPacket1(pktType, data)
+        
+        
+    def connectGroupClient(self):
+        pktType = b'\x0e'
+        channelType = b'\x09'
+        data = channelType + b'\x30'
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x01'
+        data += b'\x01'
+        self.sendZlibPacket1(pktType, data)
+
+
+    def addUserGroupClient(self):
+        pktType = b'\x0e'
+        channelType = b'\x09'
+        data = channelType + b'\x42'
+        data += b'\x00'*4
+
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += 'plzwork'.encode('utf-8') + b'\x00'
+        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x00'
+        self.sendZlibPacket1(pktType, data)
 
 
 def main():
