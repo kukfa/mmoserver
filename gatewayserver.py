@@ -183,10 +183,10 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x01'                             # num chars being sent
         data += b'\x02\x03\x04\x05'[::-1]           # character ID
         
-        player = DFCObject('Player', 772586, 'Player { Name = "plzwork"; }', 'Player')
+        player = DFCObject('Player', 772586, 'plzwork', 'Player')
 
         # build avatar
-        avatar = DFCObject('Avatar', 772587, 'Avatar { SizeMod = 3000; }', 'avatar.classes.FighterMale')
+        avatar = DFCObject('Avatar', 772587, 'avatar', 'avatar.classes.FighterMale')
 
         modifiers = DFCObject('Modifiers', None, None, 'Modifiers')
         zonespawn = DFCObject('AttributeModifier', None, None, 'avatar.base.ZoneSpawnInvulnerabilityModifier')
@@ -364,12 +364,13 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00\x01'[::-1]                       # entity ID?
         data += b'\xFF'                         # GCClassRegistry::readType
         data += 'Player'.encode('utf-8') + b'\x00'
-        data += b'\x06'
-        self.sendZlibPacket1(pktType, data)
+        #data += b'\x06'
+        #self.sendZlibPacket1(pktType, data)
 
-        data = channelType + b'\x02'
+        #data = channelType + b'\x02'
+        data += b'\x02'
         data += b'\x00\x01'[::-1]
-        data += '{Name="plzwork"; World="Town";}'.encode('utf-8') + b'\x00'  # Player::readInit
+        data += 'plzwork'.encode('utf-8') + b'\x00'  # Player::readInit
         data += b'\x02\x03\x04\x05'[::-1]
         data += b'\x02\x03\x04\x05'[::-1]
         data += b'\xFF'
@@ -378,16 +379,18 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x02\x03\x04\x05'[::-1]
         data += b'\xFF'                         # GCClassRegistry::readType
         data += 'Player'.encode('utf-8') + b'\x00'
-        data += '{Name="plzwork"; World="Town";}'.encode('utf-8') + b'\x00'
+        data += 'plzwork'.encode('utf-8') + b'\x00'
         data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x06'
-        self.sendZlibPacket1(pktType, data)
+        #data += b'\x06'
+        #self.sendZlibPacket1(pktType, data)
 
-        data = channelType + b'\x03'
+        #data = channelType + b'\x03'
+        data += b'\x03'
         data += b'\x00\x01'[::-1]
         data += b'\x03'
         data += b'\x00\x01'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\xFF' # flags
+        data += b'\x99\x99\x99\x99'[::-1]
         data += b'\x06'
         self.sendZlibPacket1(pktType, data)
   
@@ -405,11 +408,11 @@ class GatewayServer(asyncio.Protocol):
         pktType = b'\x0e'
         channelType = b'\x07'
         data = channelType + b'\x0d'
-        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
-        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
-        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
+        data += b'\x66\x66\x66\x66'[::-1]           # unknown 4 bytes
+        data += b'\x77\x77\x77\x77'[::-1]           # unknown 4 bytes
+        data += b'\x88\x88\x88\x88'[::-1]           # unknown 4 bytes
 
-        data += b'\x7C\x9E\x93\x6D'[::-1]           # unknown 4 bytes
+        data += b'\x99\x99\x99\x99'[::-1]           # unknown 4 bytes
         data += b'\x00\x1e'[::-1]                   # perUpdate
         data += b'\x00\x07'[::-1]                   # perPath
 
@@ -473,7 +476,7 @@ class GatewayServer(asyncio.Protocol):
     def zoneClientInit(self):
         pktType = b'\x0e'
         channelType = b'\x0d'
-        data = channelType + b'\x01' + b'\x7C\x9E\x93\x6D'[::-1]
+        data = channelType + b'\x01' + b'\x66\x66\x66\x66'[::-1]
         #                               not used during zone load?
         self.sendZlibPacket1(pktType, data)
 
