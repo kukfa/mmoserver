@@ -76,13 +76,14 @@ class GatewayServer(asyncio.Protocol):
                 if (secondByte == 6):
                     self.zoneClientInit()
                     self.pathManagerBudget()
-                    self.testPacket()
+                    self.randomSeed()
                     self.testEntityCreate()
                     self.testAvatarEntityCreate()
                     self.testEntityUpdate()
-                    #self.testComponentCreate()
+                    self.testComponentCreate()
                     time.sleep(1)
                     self.connectClientEntityManager()
+                    #self.testPacket()
             else:
                 pass
         else:
@@ -358,6 +359,14 @@ class GatewayServer(asyncio.Protocol):
         self.sendZlibPacket1(pktType, data)
 
 
+    def testPacket(self):
+        pktType = b'\x0e'
+        channelType = b'\x0d'
+        data = channelType + b'\x03'
+        data += b'\x00'*50
+        self.sendZlibPacket1(pktType, data)
+
+
     def testEntityCreate(self):
         pktType = b'\x0e'
         channelType = b'\x07'
@@ -431,17 +440,36 @@ class GatewayServer(asyncio.Protocol):
         pktType = b'\x0e'
         channelType = b'\x07'
         data = channelType + b'\x32'
-        data += b'\x00\x50'[::-1]       # entity ID
+        data += b'\x00\x51'[::-1]       # entity ID
         data += b'\x00\x0a'[::-1]       # component ID
-        data += b'\xFF'[::-1]
-        data += 'Manipulators'.encode('utf-8') + b'\x00'
-        data += b'\x01'*2
         data += b'\xFF'
-        data += 'creatures.weapons.1HPick_scrapyard'.encode('utf-8') + b'\x00'
-        data += b'\x01' #TODO
+        data += 'UnitContainer'.encode('utf-8') + b'\x00'
+        data += b'\x01'
+        # xx::readInit
+        data += b'\x66'*4
+        data += b'\x77'*4
+        data += b'\x00' #FF?
+        data += b'\x00'
+        
+        data += b'\x32'
+        data += b'\x00\x51'[::-1]       # entity ID
+        data += b'\x00\x0b'[::-1]       # component ID
+        data += b'\xFF'
+        data += 'Manipulators'.encode('utf-8') + b'\x00'
+        data += b'\x01'
+        # xx::readInit
+        data += b'\x00'
+        
+        data += b'\x32'
+        data += b'\x00\x51'[::-1]
+        data += b'\x00\x0c'[::-1]
+        data += b'\xFF'
+        data += 'QuestManager'.encode('utf-8') + b'\x00'
+        data += b'\x00'
         
         data += b'\x33'
-        data += b'\x00\x69'[::-1]
+        data += b'\x00\x0c'[::-1]
+        
         data += b'\x06'
         self.sendZlibPacket1(pktType, data)
 
@@ -460,7 +488,7 @@ class GatewayServer(asyncio.Protocol):
         self.sendZlibPacket1(pktType, data)
   
         
-    def testPacket(self):
+    def randomSeed(self):
         pktType = b'\x0e'
         channelType = b'\x07'
         data = channelType + b'\x0c'
@@ -473,7 +501,7 @@ class GatewayServer(asyncio.Protocol):
         pktType = b'\x0e'
         channelType = b'\x07'
         data = channelType + b'\x0d'
-        data += b'\x66\x66\x66\x66'[::-1]           # unknown 4 bytes
+        data += b'\x02\x03\x04\x05'[::-1]           # unknown 4 bytes
         data += b'\x77\x77\x77\x77'[::-1]           # unknown 4 bytes
         data += b'\x88\x88\x88\x88'[::-1]           # unknown 4 bytes
 
@@ -541,12 +569,12 @@ class GatewayServer(asyncio.Protocol):
     def zoneClientInit(self):
         pktType = b'\x0e'
         channelType = b'\x0d'
-        data = channelType + b'\x01' + b'\x66\x66\x66\x66'[::-1]
-        #                               not used during zone load?
+        data = channelType + b'\x01' + b'\x02\x03\x04\x05'[::-1]
+        #                               this should be char ID
         self.sendZlibPacket1(pktType, data)
 
         data = channelType + b'\x05'
-        data += b'\xFF\xFF\xFF\xFF'[::-1] + b'\x10\x20\x30\x40'[::-1]
+        data += b'\x00\x00\x00\x01'[::-1] + b'\x10\x20\x30\x40'[::-1]
         #                                   not used during zone load?
         self.sendZlibPacket1(pktType, data)
         
