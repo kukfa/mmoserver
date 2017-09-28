@@ -448,10 +448,32 @@ class GatewayServer(asyncio.Protocol):
         data += b'\xFF'
         data += 'UnitContainer'.encode('utf-8') + b'\x00'
         data += b'\x01'
-        # xx::readInit
+        # container::readInit
         data += b'\x66'*4
         data += b'\x77'*4
-        data += b'\x00' #FF?
+        # gcobject::readchilddata<inventory>
+        data += b'\x04'
+        
+        data += b'\xFF'
+        data += 'Inventory'.encode('utf-8') + b'\x00'
+        data += b'\x00' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x00'
+        
+        data += b'\xFF'
+        data += 'Inventory'.encode('utf-8') + b'\x00'
+        data += b'\x01' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x00'
+        
+        data += b'\xFF'
+        data += 'Inventory'.encode('utf-8') + b'\x00'
+        data += b'\x02' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x00'
+        
+        data += b'\xFF'
+        data += 'Inventory'.encode('utf-8') + b'\x00'
+        data += b'\x03' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x00'
+        # unitcontainer::readinit
         data += b'\x00'
         
         data += b'\x32'
@@ -464,7 +486,7 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00'
         
         data += b'\x32'
-        data += b'\x00\x51'[::-1]
+        data += b'\x00\x50'[::-1]
         data += b'\x00\x0c'[::-1]
         data += b'\xFF'
         data += 'DialogManager'.encode('utf-8') + b'\x00'
@@ -494,6 +516,15 @@ class GatewayServer(asyncio.Protocol):
         
         data += b'\x00\x00'[::-1]
         data += b'\x00\x00'[::-1]
+        
+        data += b'\x32'
+        data += b'\x00\x51'[::-1]
+        data += b'\x00\x0e'[::-1]
+        data += b'\xFF'
+        data += 'Equipment'.encode('utf-8') + b'\x00'
+        data += b'\x01'
+        # gcobject::readchilddata
+        data += b'\x00'
         
         data += b'\x06'
         self.sendZlibPacket1(pktType, data)
