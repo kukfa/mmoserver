@@ -74,14 +74,14 @@ class GatewayServer(asyncio.Protocol):
 
             if (pktType == 13):
                 if (secondByte == 6):
-                    self.zoneClientInit()
-                    self.pathManagerBudget()
                     self.randomSeed()
                     self.testEntityCreate()
                     self.testAvatarEntityCreate()
                     self.testEntityUpdate()
                     self.testComponentCreate()
                     time.sleep(1)
+                    self.zoneClientInit()
+                    self.pathManagerBudget()
                     self.connectClientEntityManager()
                     #self.testPacket()
             else:
@@ -337,6 +337,9 @@ class GatewayServer(asyncio.Protocol):
 
         procmod = DFCObject('ProcModifier', None, None, 'ProcModifier')
         player.addNode(procmod)
+        
+        dialogmanager = DFCObject('DialogManager', None, None, 'DialogManager')
+        avatar.addNode(dialogmanager)
 
         data += player.serialize()
 
@@ -464,11 +467,33 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00\x51'[::-1]
         data += b'\x00\x0c'[::-1]
         data += b'\xFF'
+        data += 'DialogManager'.encode('utf-8') + b'\x00'
+        data += b'\x01'
+        
+        data += b'\x32'
+        data += b'\x00\x51'[::-1]
+        data += b'\x00\x0d'[::-1]
+        data += b'\xFF'
         data += 'QuestManager'.encode('utf-8') + b'\x00'
+        data += b'\x01'
+        # questmanager::readinit
+        data += b'\x66'*4
+        data += b'\x00'
+        data += 'questtest'.encode('utf-8') + b'\x00'
+        data += 'questtest2'.encode('utf-8') + b'\x00'
+        data += b'\x77'*4
+        data += b'\x00'
+        data += 'questtest3'.encode('utf-8') + b'\x00'
+        data += 'questtest4'.encode('utf-8') + b'\x00'
+        data += b'\x88'*4
+        data += 'questtest5'.encode('utf-8') + b'\x00'
+        data += 'questtest6'.encode('utf-8') + b'\x00'
+        data += 'questtest7'.encode('utf-8') + b'\x00'
+        # questmanager::readavailablequests
         data += b'\x00'
         
-        data += b'\x33'
-        data += b'\x00\x0c'[::-1]
+        data += b'\x00\x00'[::-1]
+        data += b'\x00\x00'[::-1]
         
         data += b'\x06'
         self.sendZlibPacket1(pktType, data)
