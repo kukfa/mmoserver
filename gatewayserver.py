@@ -452,26 +452,60 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x66'*4
         data += b'\x77'*4
         # gcobject::readchilddata<inventory>
-        data += b'\x04'
+        data += b'\x09'
         
         data += b'\xFF'
-        data += 'Inventory'.encode('utf-8') + b'\x00'
-        data += b'\x00' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
-        data += b'\x00'
-        
-        data += b'\xFF'
-        data += 'Inventory'.encode('utf-8') + b'\x00'
+        data += 'avatar.base.Inventory'.encode('utf-8') + b'\x00'
         data += b'\x01' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x01'
         data += b'\x00'
         
         data += b'\xFF'
-        data += 'Inventory'.encode('utf-8') + b'\x00'
+        data += 'avatar.base.Bank'.encode('utf-8') + b'\x00'
         data += b'\x02' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x01'
         data += b'\x00'
         
         data += b'\xFF'
-        data += 'Inventory'.encode('utf-8') + b'\x00'
+        data += 'avatar.base.Bank2'.encode('utf-8') + b'\x00'
+        data += b'\x02' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x01'
+        data += b'\x00'
+        
+        data += b'\xFF'
+        data += 'avatar.base.Bank3'.encode('utf-8') + b'\x00'
+        data += b'\x02' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x01'
+        data += b'\x00'
+        
+        data += b'\xFF'
+        data += 'avatar.base.Bank4'.encode('utf-8') + b'\x00'
+        data += b'\x02' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x01'
+        data += b'\x00'
+        
+        data += b'\xFF'
+        data += 'avatar.base.Bank5'.encode('utf-8') + b'\x00'
+        data += b'\x02' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x01'
+        data += b'\x00'
+        
+        data += b'\xFF'
+        data += 'avatar.base.Bank6'.encode('utf-8') + b'\x00'
+        data += b'\x02' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x01'
+        data += b'\x00'
+        
+        data += b'\xFF'
+        data += 'avatar.base.Bank7'.encode('utf-8') + b'\x00'
+        data += b'\x02' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x01'
+        data += b'\x00'
+        
+        data += b'\xFF'
+        data += 'avatar.base.TradeInventory'.encode('utf-8') + b'\x00'
         data += b'\x03' # inventory type enum? 0->generic,1->backpack,2->bank,3->trade
+        data += b'\x01'
         data += b'\x00'
         # unitcontainer::readinit
         data += b'\x00'
