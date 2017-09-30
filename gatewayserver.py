@@ -527,7 +527,7 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x01'
         
         data += b'\x32'
-        data += b'\x00\x51'[::-1]
+        data += b'\x00\x50'[::-1]
         data += b'\x00\x0d'[::-1]
         data += b'\xFF'
         data += 'QuestManager'.encode('utf-8') + b'\x00'
@@ -555,9 +555,34 @@ class GatewayServer(asyncio.Protocol):
         data += b'\x00\x51'[::-1]
         data += b'\x00\x0e'[::-1]
         data += b'\xFF'
-        data += 'Equipment'.encode('utf-8') + b'\x00'
+        data += 'avatar.base.Equipment'.encode('utf-8') + b'\x00'
         data += b'\x01'
         # gcobject::readchilddata
+        data += b'\x00'
+        
+        data += b'\x32'
+        data += b'\x00\x51'[::-1]
+        data += b'\x00\x0f'[::-1]
+        data += b'\xFF'
+        data += 'avatar.base.Skills'.encode('utf-8') + b'\x00'
+        data += b'\x01'
+        # readinit
+        data += b'\x01\x02\x03\x04'
+        # readchilddata<skill>
+        data += b'\x00'
+        # readchilddata<skillprofession>
+        data += b'\x00'
+        
+        data += b'\x32'
+        data += b'\x00\x51'[::-1]
+        data += b'\x00\x10'[::-1]
+        data += b'\xFF'
+        data += 'Modifiers'.encode('utf-8') + b'\x00'
+        data += b'\x01'
+        # readinit
+        data += b'\x00'*4
+        data += b'\x00'*4
+        # readchilddatacomplete<modifier>
         data += b'\x00'
         
         data += b'\x06'
@@ -664,7 +689,7 @@ class GatewayServer(asyncio.Protocol):
         self.sendZlibPacket1(pktType, data)
 
         data = channelType + b'\x05'
-        data += b'\x00\x00\x00\x01'[::-1] + b'\x10\x20\x30\x40'[::-1]
+        data += b'\x00\x00\x00\x01'[::-1] + b'\x00\x00\x00\x01'[::-1]
         #                                   not used during zone load?
         self.sendZlibPacket1(pktType, data)
         
