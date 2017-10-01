@@ -77,7 +77,7 @@ class GatewayServer(asyncio.Protocol):
                     self.randomSeed()
                     self.testEntityCreate()
                     self.testAvatarEntityCreate()
-                    self.testEntityUpdate()
+                    #self.testEntityUpdate()
                     self.testComponentCreate()
                     time.sleep(1)
                     self.zoneClientInit()
@@ -585,6 +585,29 @@ class GatewayServer(asyncio.Protocol):
         # readchilddatacomplete<modifier>
         data += b'\x00'
         
+        data += b'\x32'
+        data += b'\x00\x51'[::-1]
+        data += b'\x00\x11'[::-1]
+        data += b'\xFF'
+        data += 'avatar.base.UnitBehavior'.encode('utf-8') + b'\x00'
+        data += b'\x01'
+        # behavior::readinit
+        data += b'\x01'
+        data += b'\x00'
+        data += b'\x00'
+        data += b'\x01'
+        # unitmover::readinit
+        data += b'\x01'
+        data += b'\x00'*4
+        data += b'\x00'*4
+        data += b'\x00'*4
+        data += b'\x00'*4
+        data += b'\x03'
+        # unitbehavior::readinit
+        data += b'\x00'
+        data += b'\x00'
+        data += b'\x01' 
+        
         data += b'\x06'
         self.sendZlibPacket1(pktType, data)
 
@@ -593,7 +616,7 @@ class GatewayServer(asyncio.Protocol):
         pktType = b'\x0e'
         channelType = b'\x07'
         data = channelType + b'\x03'
-        data += b'\x00\x51'[::-1]
+        data += b'\x00\x50'[::-1]
         data += b'\x15'
         # xx::processUpdate
         #data += b'\x00\x51'[::-1]
@@ -642,42 +665,70 @@ class GatewayServer(asyncio.Protocol):
         channelType = b'\x0d'
         data = channelType + b'\x00'
         data += zoneToLoad.encode('utf-8') + b'\x00'
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x01'                             # number of (something)
+        data += b'\x00\x00\x00\x01'[::-1]
+        data += b'\x1D'                             # number of (something)
 
         data += b'\xFF'
         data += 'world.town.npc.Amazon1'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.Bank'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.base.TrainerFighterBase'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.base.TrainerMageBase'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.base.TrainerRangerBase'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.Boy1'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.Girl1'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.Gnome1'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.HelperNoobosaur01'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.OldMan1'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.PosseMagnate'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.SnowMan1'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TokenFI'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TokenJewelry'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TokenMA'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TokenRG'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TownCommander'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TownGuard1'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TownGuard2'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TownGuard3'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TownLieutenant'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TrainerFighter'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TrainerMage'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.TrainerRanger'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.VendorPotion1'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.VendorWeapon1'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.VendorWeapon2'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.VendorWeapon3'.encode('utf-8') + b'\x00'
+        data += b'\xFF'
         data += 'world.town.npc.Well'.encode('utf-8') + b'\x00'
 
 
-        data += b'\x00\x00\x00\x00'[::-1]           # BaseLoadingScreen
+        data += b'\x00\x00\x00\x01'[::-1]           # BaseLoadingScreen
         self.sendZlibPacket1(pktType, data)
         
 
