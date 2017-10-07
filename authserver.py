@@ -3,31 +3,19 @@
 import asyncio
 import binascii
 import blowfish
+from Crypto.Cipher import DES
 import ipaddress
 import os
 import struct
 import sys
-from Crypto.Cipher import DES
 
-# gameServer info, hardcoded for now
-numServers = 1
-ageLimit = 10
+from constants import *
 
-serverID = 1
-gameIP = "10.0.2.4"
-gamePort = 7777
-maxPlayers = 20
-numPlayers = 0
-pvp = 0
-online = 1
-
-loginPort = 2110
-key = b"[;'.]94-31==-%&@!^+]\000"
-bf = blowfish.Cipher(key, byte_order="little")
-des = DES.new(b'\x54\x45\x53\x54\x00\x00\x00\x00', DES.MODE_ECB)
+bf = blowfish.Cipher(AUTH_BLOWFISHKEY, byte_order="little")
+des = DES.new(AUTH_DESKEY, DES.MODE_ECB)
 
 
-class LoginServer(asyncio.Protocol):
+class AuthServer(asyncio.Protocol):
     def connection_made(self, transport):
         self.transport = transport
         self.client = (transport.get_extra_info('peername')[0] + ":"    # IP
@@ -100,7 +88,6 @@ class LoginServer(asyncio.Protocol):
         
         
     def checksum(self, data):
-        # TODO rewrite
         chksum = 0
         for i in range(0, len(data)-4, 4):
             temp = data[i] & 0xff
@@ -169,21 +156,21 @@ class LoginServer(asyncio.Protocol):
 
     def serverList(self):
         data = b'\x04'                  # packet ID
-        data += bytes([numServers])     # total num game servers available
+        data += bytes([AUTH_NUMGATEWAYS])     # total num game servers available
         data += b'\x01'                 # last game server used
 
         # the following is repeated for each server:
-        data += bytes([serverID])       # ID of each server (starting at 1)
+        data += bytes([GATEWAY_ID])       # ID of each server (starting at 1)
         # gameserver IP, packed in big-endian order
-        data += ipaddress.IPv4Address(gameIP).packed
+        data += ipaddress.IPv4Address(GATEWAY_IP).packed
         # gameserver port, little-endian order
-        data += struct.pack("<I", gamePort)
-        data += bytes([ageLimit])       # unsure what this is used for
-        data += bytes([pvp])            # 1 if pvp server, otherwise 0
-        data += struct.pack("<H", numPlayers)   # current # of players
-        data += struct.pack("<H", maxPlayers)   # max # of players
-        data += bytes([online])     # 1 if server should be listed, otherwise 0
-        if (online == 1):
+        data += struct.pack("<I", GATEWAY_PORT)
+        data += bytes([GATEWAY_AGELIMIT])       # unsure what this is used for
+        data += bytes([GATEWAY_PVP])            # 1 if GATEWAY_PVP server, otherwise 0
+        data += struct.pack("<H", GATEWAY_NUMPLAYERS)   # current # of players
+        data += struct.pack("<H", GATEWAY_MAXPLAYERS)   # max # of players
+        data += bytes([GATEWAY_ONLINE])     # 1 if server should be listed, otherwise 0
+        if (GATEWAY_ONLINE == 1):
             data += b'\x04\x00\x00\x00\x00'
         else:
             # TODO doesn't list server if it isn't a test server
@@ -246,8 +233,8 @@ class LoginServer(asyncio.Protocol):
         the same way?
         '''
         sessionKey = pt[1:9]
-        serverID = pt[9]
-        # if (numPlayers >= maxPlayers):
+        GATEWAY_ID = pt[9]
+        # if (GATEWAY_NUMPLAYERS >= GATEWAY_MAXPLAYERS):
             # return "0f"    # 'too many players'
         # if account is logged in to a gameserver already
             # return "01"    # 'account in use'
@@ -259,7 +246,7 @@ class LoginServer(asyncio.Protocol):
 
 def main():
     loop = asyncio.get_event_loop()
-    coroutine = loop.create_server(LoginServer, host=None, port=loginPort)
+    coroutine = loop.create_server(AuthServer, host=None, port=AUTH_PORT)
     server = loop.run_until_complete(coroutine)
     
     for socket in server.sockets:
