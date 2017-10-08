@@ -62,18 +62,18 @@ class EntityManager:
         data += b'\xFF'
         data += 'avatar.classes.FighterMale'.encode('utf-8') + b'\x00'
         # WorldEntity::readInit
-        data += b'\x01\x02\x03\x04'[::-1]
-        data += b'\x01\x02\x03\x04'[::-1]
-        data += b'\x01\x02\x03\x04'[::-1]
-        data += b'\x01\x02\x03\x04'[::-1]
-        data += b'\x01\x02\x03\x04'[::-1]
+        data += b'\x00\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x00'[::-1]
         data += b'\x08'
-        data += b'\x01\x02\x03\x04'[::-1]
+        data += b'\x00\x00\x00\x00'[::-1]
         # Unit::readInit
         data += b'\x01'
         data += b'\x01'
-        data += b'\x01\x02'[::-1]
-        data += b'\x01\x02'[::-1]
+        data += b'\x00\x00'[::-1]
+        data += b'\x00\x00'[::-1]
         data += b'\x00\x50'[::-1]       # this should be player entity ID
         # Hero::readInit
         data += b'\x01\x02\x03\x04'[::-1]
@@ -86,9 +86,9 @@ class EntityManager:
         data += b'\x01\x02\x03\x04'[::-1]
         data += b'\x01\x02\x03\x04'[::-1]
         # Avatar::readInit
-        data += b'\x01'
-        data += b'\x01'
-        data += b'\x01'
+        data += b'\x01'                 # ???
+        data += b'\x06'                 # hairstyle?
+        data += b'\x00'                 # hair color
         
         data += struct.pack("B", FUNC_ENTITYMANAGER_ENDPACKET)
         gateway.send_zlib1(self.pktType, data)

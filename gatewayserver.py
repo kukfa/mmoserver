@@ -49,27 +49,43 @@ class GatewayServer(asyncio.Protocol):
 
     def data_received(self, data):
         print("[R] Data: " + data.hex())
-        zlibSplit = data.rpartition(b'\x78\x9c')
-        zlibData = zlibSplit[1] + zlibSplit[2]
-        #print("Compressed:   " + zlibData.hex())
-        
-        decompressed = zlib.decompress(zlibData)
-        print("Decompressed: " + decompressed.hex())
-        if len(decompressed) == 0: return
-        channelType = decompressed[0]
-        functionID = decompressed[1]
-        
-        if (channelType == CHANNEL_INIT):
-            self.sessionKey = decompressed[1:5]
-            self.initPacket()
-        elif (channelType == CHANNEL_USERMANAGER):
-            userManager.process(self, decompressed)
-        elif (channelType == CHANNEL_CHARACTERMANAGER):
-            characterManager.process(self, decompressed)
-        elif (channelType == CHANNEL_GROUPSERVER):
-            groupServer.process(self, decompressed)
-        elif (channelType == CHANNEL_ZONESERVER):
-            zoneServer.process(self, decompressed)
+        decompressed_packets = self.parse(data, [])
+
+        for packet in decompressed_packets:
+            channelType = packet[0]
+            if (channelType == CHANNEL_INIT):
+                self.sessionKey = packet[1:5]
+                self.initPacket()
+            elif (channelType == CHANNEL_USERMANAGER):
+                userManager.process(self, packet)
+            elif (channelType == CHANNEL_CHARACTERMANAGER):
+                characterManager.process(self, packet)
+            elif (channelType == CHANNEL_GROUPSERVER):
+                groupServer.process(self, packet)
+            elif (channelType == CHANNEL_ZONESERVER):
+                zoneServer.process(self, packet)
+            
+            
+    def parse(self, data, packets):
+        if len(data) == 0:
+            return packets
+
+        pktType = data[0]
+        decompressed = []
+        if pktType in ZLIB1_PACKETS:
+            compressedSize = struct.unpack("<I", data[4:8])[0] - 12
+            endOfPacket = 20 + compressedSize
+            decompressed = zlib.decompress(data[20:endOfPacket])
+        elif pktType in ZLIB3_PACKETS:
+            compressedSize = struct.unpack("<I", data[4:8])[0] - 7
+            endOfPacket = 15 + compressedSize
+            decompressed = zlib.decompress(data[15:endOfPacket])
+
+        if len(decompressed) != 0:
+            print("Decompressed: " + decompressed.hex())
+            packets.append(decompressed)
+            return self.parse(data[endOfPacket:], packets)
+        return packets
 
 
     def send_zlib1(self, pktType, data):
