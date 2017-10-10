@@ -45,38 +45,38 @@ class EntityManager:
         data += b'\x00\x50'[::-1]                       # entity ID?
         data += b'\xFF'                         # GCClassRegistry::readType
         data += 'Player'.encode('utf-8') + b'\x00'
-        data += 'plzwork'.encode('utf-8') + b'\x00'  # Player::readInit
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
+        data += CHAR_NAME.encode('utf-8') + b'\x00'  # Player::readInit
+        data += b'\x00\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x00'[::-1]
         data += b'\xFF'
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
-        data += b'\x02\x03\x04\x05'[::-1]
+        data += struct.pack("<I", CHAR_ID)
+        data += b'\x00\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x00'[::-1]
         data += b'\xFF'                         # GCClassRegistry::readType
-        data += 'Player'.encode('utf-8') + b'\x00'
+        data += 'ZoneDef'.encode('utf-8') + b'\x00'
         data += 'Town'.encode('utf-8') + b'\x00'
-        data += b'\x02\x03\x04\x05'[::-1]
+        data += b'\x00\x00\x00\x00'[::-1]
         
         data += struct.pack("B", FUNC_ENTITYMANAGER_ENTITYCREATEINIT)
         data += b'\x00\x51'[::-1]
         data += b'\xFF'
         data += 'avatar.classes.FighterMale'.encode('utf-8') + b'\x00'
         # WorldEntity::readInit
-        data += b'\x00\x00\x00\x00'[::-1]
-        data += b'\x00\x00\x00\x00'[::-1]
-        data += b'\x00\x00\x00\x00'[::-1]
-        data += b'\x00\x00\x00\x00'[::-1]
-        data += b'\x00\x00\x00\x00'[::-1]
-        data += b'\x08'
-        data += b'\x00\x00\x00\x00'[::-1]
+        data += struct.pack("<i", 150)   # size?
+        data += struct.pack("!f", 444)      # position x (datatype = ??)
+        data += struct.pack("!f", -170)      # position y (datatype = ??)
+        data += struct.pack("!f", 50)       # position z (datatype = ??)
+        data += struct.pack("<f", 0)       # heading
+        data += b'\x00'
+        #data += b'\x99\x99'[::-1]
         # Unit::readInit
         data += b'\x01'
         data += b'\x01'
-        data += b'\x00\x00'[::-1]
-        data += b'\x00\x00'[::-1]
+        data += b'\x00\x66'[::-1]
+        data += b'\x00\x48'[::-1]
         data += b'\x00\x50'[::-1]       # this should be player entity ID
         # Hero::readInit
-        data += b'\x01\x02\x03\x04'[::-1]
+        data += b'\x00\x00\x00\x03'[::-1]
         data += b'\x01\x02'[::-1]
         data += b'\x01\x02'[::-1]
         data += b'\x01\x02'[::-1]
@@ -96,7 +96,7 @@ class EntityManager:
 
     def entityUpdate(self, gateway):
         data = self.channelType + struct.pack("B", FUNC_ENTITYMANAGER_ENTITYUPDATE)
-        data += b'\x00\x50'[::-1]
+        data += b'\x00\x51'[::-1]
         data += b'\x15'
         # xx::processUpdate
         #data += b'\x00\x51'[::-1]
@@ -175,7 +175,7 @@ class EntityManager:
         # unitcontainer::readinit
         data += b'\x00'
         
-        data += b'\x32'
+        data += struct.pack("B", FUNC_ENTITYMANAGER_COMPONENTCREATE)
         data += b'\x00\x51'[::-1]       # entity ID
         data += b'\x00\x0b'[::-1]       # component ID
         data += b'\xFF'
@@ -184,14 +184,14 @@ class EntityManager:
         # xx::readInit
         data += b'\x00'
         
-        data += b'\x32'
+        data += struct.pack("B", FUNC_ENTITYMANAGER_COMPONENTCREATE)
         data += b'\x00\x50'[::-1]
         data += b'\x00\x0c'[::-1]
         data += b'\xFF'
         data += 'DialogManager'.encode('utf-8') + b'\x00'
         data += b'\x01'
         
-        data += b'\x32'
+        data += struct.pack("B", FUNC_ENTITYMANAGER_COMPONENTCREATE)
         data += b'\x00\x50'[::-1]
         data += b'\x00\x0d'[::-1]
         data += b'\xFF'
@@ -216,7 +216,7 @@ class EntityManager:
         data += b'\x00\x00'[::-1]
         data += b'\x00\x00'[::-1]
         
-        data += b'\x32'
+        data += struct.pack("B", FUNC_ENTITYMANAGER_COMPONENTCREATE)
         data += b'\x00\x51'[::-1]
         data += b'\x00\x0e'[::-1]
         data += b'\xFF'
@@ -225,7 +225,7 @@ class EntityManager:
         # gcobject::readchilddata
         data += b'\x00'
         
-        data += b'\x32'
+        data += struct.pack("B", FUNC_ENTITYMANAGER_COMPONENTCREATE)
         data += b'\x00\x51'[::-1]
         data += b'\x00\x0f'[::-1]
         data += b'\xFF'
@@ -238,7 +238,7 @@ class EntityManager:
         # readchilddata<skillprofession>
         data += b'\x00'
         
-        data += b'\x32'
+        data += struct.pack("B", FUNC_ENTITYMANAGER_COMPONENTCREATE)
         data += b'\x00\x51'[::-1]
         data += b'\x00\x10'[::-1]
         data += b'\xFF'
@@ -250,7 +250,7 @@ class EntityManager:
         # readchilddatacomplete<modifier>
         data += b'\x00'
         
-        data += b'\x32'
+        data += struct.pack("B", FUNC_ENTITYMANAGER_COMPONENTCREATE)
         data += b'\x00\x51'[::-1]
         data += b'\x00\x11'[::-1]
         data += b'\xFF'

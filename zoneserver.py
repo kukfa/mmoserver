@@ -20,74 +20,15 @@ class ZoneServer:
             gateway.entityManager.entityCreateInit(gateway)
             gateway.entityManager.componentCreate(gateway)
             gateway.entityManager.connect(gateway)
+            #gateway.entityManager.entityUpdate(gateway)
 
 
     def connect(self, gateway, zoneToLoad):
         data = self.channelType + struct.pack("B", FUNC_ZONESERVER_CONNECT)
         data += zoneToLoad.encode('utf-8') + b'\x00'
-        data += b'\x00\x00\x00\x01'[::-1]
-        data += b'\x1D'                             # number of (something)
-
-        data += b'\xFF'
-        data += 'world.town.npc.Amazon1'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.Bank'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.base.TrainerFighterBase'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.base.TrainerMageBase'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.base.TrainerRangerBase'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.Boy1'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.Girl1'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.Gnome1'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.HelperNoobosaur01'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.OldMan1'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.PosseMagnate'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.SnowMan1'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TokenFI'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TokenJewelry'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TokenMA'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TokenRG'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TownCommander'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TownGuard1'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TownGuard2'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TownGuard3'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TownLieutenant'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TrainerFighter'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TrainerMage'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.TrainerRanger'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.VendorPotion1'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.VendorWeapon1'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.VendorWeapon2'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.VendorWeapon3'.encode('utf-8') + b'\x00'
-        data += b'\xFF'
-        data += 'world.town.npc.Well'.encode('utf-8') + b'\x00'
-
-        data += b'\x00\x00\x00\x01'[::-1]           # BaseLoadingScreen
+        data += b'\x00\x00\x00\x1e'[::-1]
+        data += b'\x00'                             # number of (something)
+        data += b'\x00\x00\x00\x01'[::-1]           # Townston (2)
         gateway.send_zlib1(self.pktType, data)
         
 

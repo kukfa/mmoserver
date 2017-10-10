@@ -152,7 +152,7 @@ class CharacterManager:
         avatar.addProperty('PVPRating', 1337)
 
         player.addNode(avatar)
-        player.addProperty('Name', 'plzwork')
+        player.addProperty('Name', CHAR_NAME)
 
         #test = DFCObject('StockUnit', None, None, 'skills.generic.DivineIntervention.DelayObject')
         #player.addNode(test)
