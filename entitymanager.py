@@ -46,11 +46,11 @@ class EntityManager:
         data += b'\xFF'                         # GCClassRegistry::readType
         data += 'Player'.encode('utf-8') + b'\x00'
         data += CHAR_NAME.encode('utf-8') + b'\x00'  # Player::readInit
-        data += b'\x00\x00\x00\x00'[::-1]
-        data += b'\x00\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x05'[::-1]
+        data += b'\x00\x00\x00\x05'[::-1]
         data += b'\xFF'
         data += struct.pack("<I", CHAR_ID)
-        data += b'\x00\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x05'[::-1]       # pvp wins
         data += b'\x00\x00\x00\x00'[::-1]
         data += b'\xFF'                         # GCClassRegistry::readType
         data += 'ZoneDef'.encode('utf-8') + b'\x00'
@@ -83,8 +83,8 @@ class EntityManager:
         data += b'\x00\x02'[::-1]               # intellect points
         data += b'\x00\x02'[::-1]               # unspent points
         data += b'\x00\x02'[::-1]               # respec time remaining
-        data += b'\x09\x00\x00\x00'[::-1]
-        data += b'\x09\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x05'[::-1]       # pvp power
+        data += b'\x00\x00\x00\x06'[::-1]
         # Avatar::readInit
         data += b'\x01'                 # ???
         data += b'\x06'                 # hairstyle?
@@ -257,14 +257,13 @@ class EntityManager:
         data += 'avatar.base.UnitBehavior'.encode('utf-8') + b'\x00'
         data += b'\x01'
         # behavior::readinit
-        data += b'\x01'
+        data += b'\x13' #moveindirection
         data += b'\x00'
         data += b'\x00'
         data += b'\x01'
         # unitmover::readinit
-        data += b'\x01'
-        data += b'\x00'*4
-        data += b'\x00'*4
+        data += b'\x04'
+        data += b'\x64'
         data += b'\x00'*4
         data += b'\x00'*4
         data += b'\x03'
