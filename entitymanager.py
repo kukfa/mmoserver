@@ -29,7 +29,7 @@ class EntityManager:
     def interval(self, gateway):
         data = self.channelType + struct.pack("B", FUNC_ENTITYMANAGER_INTERVAL)
         data += b'\x02\x03\x04\x05'[::-1]           # unknown 4 bytes
-        data += b'\x77\x77\x77\x77'[::-1]           # unknown 4 bytes
+        data += b'\x66\x66\x66\x66'[::-1]           # unknown 4 bytes
         data += b'\x88\x88\x88\x88'[::-1]           # unknown 4 bytes
 
         data += b'\x99\x99\x99\x99'[::-1]           # unknown 4 bytes
@@ -62,29 +62,29 @@ class EntityManager:
         data += b'\xFF'
         data += 'avatar.classes.FighterMale'.encode('utf-8') + b'\x00'
         # WorldEntity::readInit
-        data += struct.pack("<i", 150)   # size?
-        data += struct.pack("!f", 444)      # position x (datatype = ??)
-        data += struct.pack("!f", -170)      # position y (datatype = ??)
-        data += struct.pack("!f", 50)       # position z (datatype = ??)
-        data += struct.pack("<f", 0)       # heading
+        data += struct.pack("!f", 1)      # 1=visible, 0=invisible
+        data += struct.pack("!f", 0)      # position x
+        data += struct.pack("!f", 0)     # position y
+        data += struct.pack("!f", 50)       # position z
+        data += struct.pack("!f", -90)       # heading
         data += b'\x00'
         #data += b'\x99\x99'[::-1]
         # Unit::readInit
         data += b'\x01'
-        data += b'\x01'
-        data += b'\x00\x66'[::-1]
-        data += b'\x00\x48'[::-1]
+        data += b'\x05'                 # level
+        data += b'\x33\x33'[::-1]
+        data += b'\x22\x22'[::-1]
         data += b'\x00\x50'[::-1]       # this should be player entity ID
         # Hero::readInit
-        data += b'\x00\x00\x00\x03'[::-1]
-        data += b'\x01\x02'[::-1]
-        data += b'\x01\x02'[::-1]
-        data += b'\x01\x02'[::-1]
-        data += b'\x01\x02'[::-1]
-        data += b'\x01\x02'[::-1]
-        data += b'\x01\x02'[::-1]
-        data += b'\x01\x02\x03\x04'[::-1]
-        data += b'\x01\x02\x03\x04'[::-1]
+        data += b'\x09\x00\x00\x05'[::-1]       # experience
+        data += b'\x00\x02'[::-1]               # strength points (base val = 10 + this)
+        data += b'\x00\x02'[::-1]               # agility points
+        data += b'\x00\x02'[::-1]               # endurance points
+        data += b'\x00\x02'[::-1]               # intellect points
+        data += b'\x00\x02'[::-1]               # unspent points
+        data += b'\x00\x02'[::-1]               # respec time remaining
+        data += b'\x09\x00\x00\x00'[::-1]
+        data += b'\x09\x00\x00\x00'[::-1]
         # Avatar::readInit
         data += b'\x01'                 # ???
         data += b'\x06'                 # hairstyle?
