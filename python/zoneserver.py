@@ -20,7 +20,6 @@ class ZoneServer:
             gateway.entityManager.entityCreateInit(gateway)
             gateway.entityManager.componentCreate(gateway)
             gateway.entityManager.connect(gateway)
-            #gateway.entityManager.entityUpdate(gateway)
 
 
     def connect(self, gateway, zoneToLoad):

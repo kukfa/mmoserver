@@ -60,6 +60,8 @@ class GatewayServer(asyncio.Protocol):
                 userManager.process(self, packet)
             elif (channelType == CHANNEL_CHARACTERMANAGER):
                 characterManager.process(self, packet)
+            elif (channelType == CHANNEL_ENTITYMANAGER):
+                entityManager.process(self, packet)
             elif (channelType == CHANNEL_GROUPSERVER):
                 groupServer.process(self, packet)
             elif (channelType == CHANNEL_ZONESERVER):

@@ -9,9 +9,12 @@ class EntityManager:
         self.pktType = b'\x0e'
         self.channelType = struct.pack("B", CHANNEL_ENTITYMANAGER)
         self.seedValue = os.urandom(4)
-        
+
+
     def process(self, gateway, packet):
         functionID = packet[1]
+        if (functionID == FUNC_ENTITYMANAGER_CLIENT_COMPONENTUPDATE):
+            self.componentUpdate(gateway)
 
 
     def connect(self, gateway):
@@ -53,9 +56,9 @@ class EntityManager:
         data += b'\x00\x00\x00\x05'[::-1]       # pvp wins
         data += b'\x00\x00\x00\x00'[::-1]
         data += b'\xFF'                         # GCClassRegistry::readType
-        data += 'ZoneDef'.encode('utf-8') + b'\x00'
+        data += 'PVPTeam'.encode('utf-8') + b'\x00'
         data += 'Town'.encode('utf-8') + b'\x00'
-        data += b'\x00\x00\x00\x00'[::-1]
+        data += b'\x00\x00\x00\x13'[::-1]
         
         data += struct.pack("B", FUNC_ENTITYMANAGER_ENTITYCREATEINIT)
         data += b'\x00\x51'[::-1]
@@ -96,7 +99,7 @@ class EntityManager:
 
     def entityUpdate(self, gateway):
         data = self.channelType + struct.pack("B", FUNC_ENTITYMANAGER_ENTITYUPDATE)
-        data += b'\x00\x51'[::-1]
+        data += b'\x00\x01'[::-1]
         data += b'\x15'
         # xx::processUpdate
         #data += b'\x00\x51'[::-1]
@@ -104,8 +107,8 @@ class EntityManager:
         data += b'\x99\x99\x99\x99'[::-1]
         data += struct.pack("B", FUNC_ENTITYMANAGER_ENDPACKET)
         gateway.send_zlib1(self.pktType, data)
-        
-        
+
+
     def componentCreate(self, gateway):
         data = self.channelType + struct.pack("B", FUNC_ENTITYMANAGER_COMPONENTCREATE)
         data += b'\x00\x51'[::-1]       # entity ID
@@ -266,11 +269,23 @@ class EntityManager:
         data += b'\x64'
         data += b'\x00'*4
         data += b'\x00'*4
-        data += b'\x03'
+        data += b'\x02'
+        data += b'\x00\x00'[::-1]#01
+        #data += b'\x00\x00\x00\x00'
+        #data += b'\x00\x00\x00\x01'[::-1]
         # unitbehavior::readinit
         data += b'\x00'
         data += b'\x00'
         data += b'\x01' 
         
+        data += struct.pack("B", FUNC_ENTITYMANAGER_ENDPACKET)
+        gateway.send_zlib1(self.pktType, data)
+
+
+    def componentUpdate(self, gateway):
+        data = self.channelType + struct.pack("B", FUNC_ENTITYMANAGER_COMPONENTUPDATE)
+        data += b'\x00\xFF'[::-1]
+        data += b'\x01'
+
         data += struct.pack("B", FUNC_ENTITYMANAGER_ENDPACKET)
         gateway.send_zlib1(self.pktType, data)
