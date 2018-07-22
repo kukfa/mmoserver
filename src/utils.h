@@ -1,10 +1,10 @@
 #pragma once
 
-void print_hex(const std::string &data) {
+std::string print_hex(const char* data, std::size_t length) {
   std::ostringstream hex_str;
-  for (unsigned char c : data) {
+  for (std::string::size_type i = 0; i < length; i++) {
     hex_str << std::hex << std::setw(2) << std::setfill('0')
-            << (unsigned short)c << " ";
+            << (unsigned short)(unsigned char)data[i] << " ";
   }
-  std::cout << hex_str.str() << std::endl;
+  return hex_str.str();
 }
