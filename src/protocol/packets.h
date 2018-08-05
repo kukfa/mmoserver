@@ -1,22 +1,24 @@
 #pragma once
 
 #include <boost/interprocess/streams/bufferstream.hpp>
-#include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <constants.h>
 #include <messages.h>
 #include <utils.h>
 
+typedef std::array<char, 3> addr;
+
 struct packet {
   char type;
-  std::array<char, 3> src;
-  std::array<char, 3> dest;
+  addr src;
+  addr dest;
   message msg;
 
   packet() {}
 
-  packet(char type, std::array<char, 3> dest, std::array<char, 3> src,
-         message msg)
+  packet(char type, addr dest, addr src, message msg)
       : type(type), dest(dest), src(src), msg(msg) {}
 };
 
@@ -25,12 +27,11 @@ struct zlib1_packet : public packet {
 
   zlib1_packet() {}
 
-  zlib1_packet(char type, std::array<char, 3> dest, std::array<char, 3> src,
-               message msg)
+  zlib1_packet(char type, addr dest, addr src, message msg)
       : packet(type, dest, src, msg) {}
 
   // untested
-  void write(std::ostream& out) {
+  void write(std::ostream &out) {
     std::stringstream unc, compressed;
     msg.write(unc);
     int uncsize = unc.str().size();
@@ -51,18 +52,18 @@ struct zlib1_packet : public packet {
   }
 
   // untested
-  void read(std::istream& in) {
+  void read(std::istream &in) {
     int csize, uncsize;
 
-    in.read((char*)&type, sizeof(type));
-    in.read((char*)&dest[0], dest.size());
-    in.read((char*)&csize, sizeof(csize));
+    in.read((char *)&type, sizeof(type));
+    in.read((char *)&dest[0], dest.size());
+    in.read((char *)&csize, sizeof(csize));
     csize -= 12;
-    in.read((char*)&src[0], src.size());
+    in.read((char *)&src[0], src.size());
     in.read((char *)&unknown[0], unknown.size());
-    in.read((char*)&uncsize, sizeof(uncsize));
+    in.read((char *)&uncsize, sizeof(uncsize));
 
-    char buf[session::max_length];
+    char buf[max_length];
     boost::iostreams::filtering_streambuf<boost::iostreams::input> decompressor;
     decompressor.push(boost::iostreams::zlib_decompressor());
     decompressor.push(in);
@@ -79,12 +80,11 @@ struct zlib2_packet : public packet {
 
   zlib2_packet() {}
 
-  zlib2_packet(char type, std::array<char, 3> dest, std::array<char, 3> src,
-               message msg)
+  zlib2_packet(char type, addr dest, addr src, message msg)
       : packet(type, dest, src, msg) {}
 
   // untested
-  void write(std::ostream& out) {
+  void write(std::ostream &out) {
     std::stringstream unc, compressed;
     msg.write(unc);
     int uncsize = unc.str().size();
@@ -103,7 +103,7 @@ struct zlib2_packet : public packet {
   }
 
   // untested
-  void read(std::istream& in) {
+  void read(std::istream &in) {
     int csize, uncsize;
 
     in.read((char *)&type, sizeof(type));
@@ -111,13 +111,13 @@ struct zlib2_packet : public packet {
     in.read((char *)&csize, sizeof(csize));
     csize -= 4;
 
-    char buf[session::max_length];
+    char buf[max_length];
     boost::iostreams::filtering_streambuf<boost::iostreams::input> decompressor;
     decompressor.push(boost::iostreams::zlib_decompressor());
     decompressor.push(in);
     std::istream decompressed(&decompressor);
     decompressed.read(buf, csize);
-    in.read((char*)&uncsize, sizeof(uncsize));
+    in.read((char *)&uncsize, sizeof(uncsize));
 
     boost::interprocess::bufferstream msgdata(buf, uncsize);
     msg.read(msgdata, uncsize);
@@ -127,11 +127,10 @@ struct zlib2_packet : public packet {
 struct zlib3_packet : public packet {
   zlib3_packet() {}
 
-  zlib3_packet(char type, std::array<char, 3> dest, std::array<char, 3> src,
-               message msg)
+  zlib3_packet(char type, addr dest, addr src, message msg)
       : packet(type, dest, src, msg) {}
 
-  void write(std::ostream& out) {
+  void write(std::ostream &out) {
     std::stringstream unc, compressed;
     msg.write(unc);
     int uncsize = unc.str().size();
@@ -150,17 +149,17 @@ struct zlib3_packet : public packet {
     boost::iostreams::copy(compressed, out);
   }
 
-  void read(std::istream& in) {
+  void read(std::istream &in) {
     int csize, uncsize;
 
-    in.read((char*)&type, sizeof(type));
-    in.read((char*)&dest[0], dest.size());
-    in.read((char*)&csize, sizeof(csize));
+    in.read((char *)&type, sizeof(type));
+    in.read((char *)&dest[0], dest.size());
+    in.read((char *)&csize, sizeof(csize));
     csize -= 7;
-    in.read((char*)&src[0], src.size());
-    in.read((char*)&uncsize, sizeof(uncsize));
+    in.read((char *)&src[0], src.size());
+    in.read((char *)&uncsize, sizeof(uncsize));
 
-    char buf[session::max_length];
+    char buf[max_length];
     boost::iostreams::filtering_streambuf<boost::iostreams::input> decompressor;
     decompressor.push(boost::iostreams::zlib_decompressor());
     decompressor.push(in);
@@ -175,12 +174,11 @@ struct zlib3_packet : public packet {
 struct uncompressed_packet : public packet {
   uncompressed_packet() {}
 
-  uncompressed_packet(char type, std::array<char, 3> dest,
-                      std::array<char, 3> src, message msg)
+  uncompressed_packet(char type, addr dest, addr src, message msg)
       : packet(type, dest, src, msg) {}
 
   // untested
-  void write(std::ostream& out) {
+  void write(std::ostream &out) {
     std::stringstream msgdata;
     msg.write(msgdata);
     int size = msgdata.str().size();
@@ -192,12 +190,12 @@ struct uncompressed_packet : public packet {
   }
 
   // untested
-  void read(std::istream& in) {
+  void read(std::istream &in) {
     int size;
 
-    in.read((char*)&type, sizeof(type));
-    in.read((char*)&dest[0], dest.size());
-    in.read((char*)&size, sizeof(size));
+    in.read((char *)&type, sizeof(type));
+    in.read((char *)&dest[0], dest.size());
+    in.read((char *)&size, sizeof(size));
     msg.read(in, size);
   }
 };

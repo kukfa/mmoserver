@@ -17,24 +17,25 @@ struct message {
   char opcode;
   std::vector<char> data;
 
-  message () {}
+  message() {}
 
   message(char id, char opcode, std::vector<char> data)
       : id(id), opcode(opcode), data(data) {}
 
-  void write(std::ostream& out) {
-    out.write((char*)&id, sizeof(id));
-    out.write((char*)&opcode, sizeof(opcode));
+  std::size_t write(std::ostream &out) {
+    out.write((char *)&id, sizeof(id));
+    out.write((char *)&opcode, sizeof(opcode));
     out.write(data.data(), data.size());
+    return sizeof(id) + sizeof(opcode) + data.size();
   }
 
-  void read(std::istream& in, int size) {
+  void read(std::istream &in, int size) {
     size -= sizeof(id) + sizeof(opcode);
     data.resize(size);
 
-    in.read((char*)&id, sizeof(id));
-    in.read((char*)&opcode, sizeof(opcode));
-    in.read((char*)&data[0], size);
+    in.read((char *)&id, sizeof(id));
+    in.read((char *)&opcode, sizeof(opcode));
+    in.read((char *)&data[0], size);
   }
 };
 

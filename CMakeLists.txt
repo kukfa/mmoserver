@@ -11,18 +11,25 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 find_package(Threads REQUIRED)
 find_package(Boost 1.67 REQUIRED COMPONENTS thread regex system program_options iostreams)
 find_package(ZLIB REQUIRED)
+find_package(cppzmq REQUIRED)
 
-add_executable(gameserver src/gameserver.cpp src/network/gateway.cpp)
+add_executable(gameserver
+  src/gameserver.cpp
+  src/gateway/gateway.cpp
+  src/broker/broker.cpp
+)
 target_include_directories(gameserver PRIVATE
   ${Boost_INCLUDE_DIRS}
   ${ZLIB_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/broker
   ${CMAKE_CURRENT_SOURCE_DIR}/src/protocol
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/network
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/gateway
 )
 target_link_libraries(gameserver
   ${Boost_LIBRARIES}
   ${ZLIB_LIBRARIES}
   Threads::Threads
+  cppzmq
 )
