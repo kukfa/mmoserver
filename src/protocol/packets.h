@@ -8,17 +8,15 @@
 #include <messages.h>
 #include <utils.h>
 
-typedef std::array<char, 3> addr;
-
 struct packet {
   char type;
-  addr src;
-  addr dest;
+  message_addr src;
+  message_addr dest;
   message msg;
 
   packet() {}
 
-  packet(char type, addr dest, addr src, message msg)
+  packet(char type, message_addr dest, message_addr src, message msg)
       : type(type), dest(dest), src(src), msg(msg) {}
 };
 
@@ -27,7 +25,7 @@ struct zlib1_packet : public packet {
 
   zlib1_packet() {}
 
-  zlib1_packet(char type, addr dest, addr src, message msg)
+  zlib1_packet(char type, message_addr dest, message_addr src, message msg)
       : packet(type, dest, src, msg) {}
 
   // untested
@@ -80,7 +78,7 @@ struct zlib2_packet : public packet {
 
   zlib2_packet() {}
 
-  zlib2_packet(char type, addr dest, addr src, message msg)
+  zlib2_packet(char type, message_addr dest, message_addr src, message msg)
       : packet(type, dest, src, msg) {}
 
   // untested
@@ -127,7 +125,7 @@ struct zlib2_packet : public packet {
 struct zlib3_packet : public packet {
   zlib3_packet() {}
 
-  zlib3_packet(char type, addr dest, addr src, message msg)
+  zlib3_packet(char type, message_addr dest, message_addr src, message msg)
       : packet(type, dest, src, msg) {}
 
   void write(std::ostream &out) {
@@ -174,7 +172,7 @@ struct zlib3_packet : public packet {
 struct uncompressed_packet : public packet {
   uncompressed_packet() {}
 
-  uncompressed_packet(char type, addr dest, addr src, message msg)
+  uncompressed_packet(char type, message_addr dest, message_addr src, message msg)
       : packet(type, dest, src, msg) {}
 
   // untested

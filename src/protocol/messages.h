@@ -1,5 +1,7 @@
 #pragma once
 
+typedef std::array<char, 3> message_addr;
+
 enum class channel_id : char {
   init = 0x01,
   usermanager = 0x03,
